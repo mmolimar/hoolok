@@ -23,6 +23,8 @@ libraryDependencies ++= {
     "io.circe" %% "circe-generic" % circeVersion,
     "io.circe" %% "circe-yaml" % circeVersion,
 
+    "org.reflections" % "reflections" % "0.9.12",
+
     "org.scalatest" %% "scalatest-wordspec" % scalaTestVersion % Test,
     "org.scalatest" %% "scalatest-shouldmatchers" % scalaTestVersion % Test
   )
@@ -35,6 +37,21 @@ compileScalastyle := scalastyle.in(Compile).toTask("").value
 lazy val testScalastyle = taskKey[Unit]("testScalastyle")
 testScalastyle := scalastyle.in(Test).toTask("").value
 (test in Test) := ((test in Test) dependsOn testScalastyle).value
+
+sourceGenerators in Compile += {
+  Def.task {
+    val file = (sourceManaged in Compile).value / "com" / "github" / "mmolimar" / "hoolok" / "BuildInfo.scala"
+    IO.write(
+      file,
+      s"""package com.github.mmolimar.hoolok
+         |
+         |private[hoolok] object BuildInfo {
+         |  val version = "${version.value}"
+         |}""".stripMargin
+    )
+    Seq(file)
+  }.taskValue
+}
 
 val hoolokMainClass = "com.github.mmolimar.hoolok.JobRunner"
 mainClass in (Compile, run) := Some(hoolokMainClass)
