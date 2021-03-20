@@ -511,7 +511,7 @@
             <parameter name="maxTypes">30</parameter>
         </parameters>
     </check>
-    <check level="warn" enabled="true" class="org.scalastyle.scalariform.ObjectNamesChecker">
+    <check level="warn" enabled="false" class="org.scalastyle.scalariform.ObjectNamesChecker">
         <!--
           Check that object names match a regular expression.
           ID: object.name

@@ -56,6 +56,7 @@ sourceGenerators in Compile += {
 val hoolokMainClass = "com.github.mmolimar.hoolok.JobRunner"
 mainClass in (Compile, run) := Some(hoolokMainClass)
 run in Compile := Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)).evaluated
+fork in run := true
 
 mainClass in assembly := Some(hoolokMainClass)
 assemblyMergeStrategy in assembly := {
