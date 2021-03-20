@@ -13,15 +13,21 @@ package object hoolok {
 
   private[hoolok] case class HoolokAppConfig(
                                               name: String,
-                                              description: Option[String],
-                                              sparkConf: Option[Map[String, String]]
+                                              sparkConf: Option[Map[String, String]],
+                                              sparkContext: Option[HoolokSparkContextConfig]
                                             ) extends Config
 
+  private[hoolok] case class HoolokSparkContextConfig(
+                                                       archive: Option[String],
+                                                       description: Option[String],
+                                                       file: Option[String],
+                                                       jar: Option[String]
+                                                     ) extends Config
 
   private[hoolok] case class HoolokInputConfig(
                                                 id: String,
                                                 format: String,
-                                                stream: Option[Boolean],
+                                                kind: String,
                                                 coalesce: Option[Int],
                                                 repartition: Option[HoolokRepartitionConfig],
                                                 options: Option[Map[String, String]]
@@ -29,7 +35,7 @@ package object hoolok {
 
   private[hoolok] case class HoolokStepConfig(
                                                id: String,
-                                               `type`: String,
+                                               kind: String,
                                                options: Option[Map[String, String]]
                                              ) extends Config
 
@@ -37,9 +43,9 @@ package object hoolok {
                                                  id: String,
                                                  format: String,
                                                  mode: String,
+                                                 kind: String,
                                                  coalesce: Option[Int],
                                                  repartition: Option[HoolokRepartitionConfig],
-                                                 stream: Option[Boolean],
                                                  options: Option[Map[String, String]],
                                                  partitionBy: Option[List[String]],
                                                  trigger: Option[String]

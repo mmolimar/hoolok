@@ -1,22 +1,35 @@
 package com.github.mmolimar.hoolok
 
+import com.github.mmolimar.hoolok.Utils.inspectOutputs
+import com.github.mmolimar.hoolok.annotations.OutputKind
 import com.github.mmolimar.hoolok.implicits.DataframeEnricher
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-object Output extends Logging {
+trait Output {
+
+  val config: HoolokOutputConfig
+
+  def write(): Unit
+}
+
+object Output {
+
+  private val outputs = inspectOutputs
 
   def apply(config: HoolokOutputConfig)(implicit spark: SparkSession): Output = {
-    config.stream match {
-      case Some(true) => new OutputStreamProcessor(config)(spark)
-      case _ => new OutputBatchProcessor(config)(spark)
-    }
+    outputs.get(config.kind.trim.toLowerCase)
+      .map(clz => clz.getConstructor(classOf[HoolokOutputConfig], classOf[SparkSession]))
+      .map(_.newInstance(config, spark))
+      .getOrElse {
+        throw new InvalidOutputConfigException(s"Output kind '${config.kind}' is not supported.")
+      }
   }
 
 }
 
-abstract class Output(config: HoolokOutputConfig)
-                     (implicit spark: SparkSession) extends Logging {
+abstract class BaseOutput(override val config: HoolokOutputConfig)
+                         (implicit spark: SparkSession) extends Output with Logging {
 
   final def write(): Unit = {
     logInfo(s"Writing dataframe for table '${config.id}' with format '${config.format}'.'")
@@ -31,8 +44,9 @@ abstract class Output(config: HoolokOutputConfig)
 
 }
 
-private class OutputStreamProcessor(config: HoolokOutputConfig)
-                                   (implicit spark: SparkSession) extends Output(config)(spark) {
+@OutputKind(kind = "stream")
+class OutputStreamProcessor(config: HoolokOutputConfig)
+                           (implicit spark: SparkSession) extends BaseOutput(config)(spark) {
 
   def writeInternal(dataframe: DataFrame): Unit = dataframe
     .writeStream
@@ -44,8 +58,9 @@ private class OutputStreamProcessor(config: HoolokOutputConfig)
     .awaitTermination()
 }
 
-private class OutputBatchProcessor(config: HoolokOutputConfig)
-                                  (implicit spark: SparkSession) extends Output(config)(spark) {
+@OutputKind(kind = "batch")
+class OutputBatchProcessor(config: HoolokOutputConfig)
+                          (implicit spark: SparkSession) extends BaseOutput(config)(spark) {
 
   def writeInternal(dataframe: DataFrame): Unit = dataframe
     .write

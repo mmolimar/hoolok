@@ -45,7 +45,13 @@ private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
       .appName(appConfig.name)
       .withSparkConf(appConfig.sparkConf.getOrElse(Map.empty))
       .getOrCreate()
-    appConfig.description.foreach(desc => spark.sparkContext.setJobDescription(desc))
+
+    appConfig.sparkContext.foreach { sc =>
+      sc.archive.foreach(spark.sparkContext.addArchive)
+      sc.description.foreach(spark.sparkContext.setJobDescription)
+      sc.file.foreach(spark.sparkContext.addArchive)
+      sc.jar.foreach(spark.sparkContext.addJar)
+    }
 
     spark
   }
@@ -64,10 +70,12 @@ object JobRunner extends App with Logging {
       |______  __           ______     ______
       |___  / / /______________  /________  /__
       |__  /_/ /_  __ \  __ \_  /_  __ \_  //_/
-      |_  __  / / /_/ / /_/ /  / / /_/ /  ,<
+      |_  __  / / /_/ / /_/ /  / / /_/ /  ,<       version %s
       |/_/ /_/  \____/\____//_/  \____//_/|_|
+      |________________________________________
       |
-      |""".stripMargin)
+      |"""
+      .stripMargin.format(BuildInfo.version))
 
   logInfo(s"Parsing Hoolok YAML file located at: '${args.head}'")
   private val config = yaml.parser.parse(new FileReader(args.head))

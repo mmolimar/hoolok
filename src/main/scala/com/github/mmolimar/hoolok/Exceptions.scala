@@ -1,6 +1,6 @@
 package com.github.mmolimar.hoolok
 
-import com.github.mmolimar.hoolok.errors.{ConfigError, ConfigStepError, Errors, UnknownHoolokError}
+import com.github.mmolimar.hoolok.errors.{ConfigError, ConfigInputError, ConfigOutputError, ConfigStepError, Errors, UnknownHoolokError}
 
 private[hoolok] sealed class HoolokException(
                                               val error: Errors,
@@ -18,10 +18,20 @@ class InvalidConfigException(
                               cause: Throwable = None.orNull
                             ) extends HoolokException(ConfigError, Some(message), cause)
 
+class InvalidInputConfigException(
+                                  message: String,
+                                  cause: Throwable = None.orNull
+                                ) extends HoolokException(ConfigInputError, Some(message), cause)
+
 class InvalidStepConfigException(
                                   message: String,
                                   cause: Throwable = None.orNull
                                 ) extends HoolokException(ConfigStepError, Some(message), cause)
+
+class InvalidOutputConfigException(
+                                   message: String,
+                                   cause: Throwable = None.orNull
+                                 ) extends HoolokException(ConfigOutputError, Some(message), cause)
 
 class UnknownHoolokError(
                           message: String,
@@ -48,9 +58,19 @@ private[hoolok] object errors {
     override val message: String = "Hoolok YAML file is not valid"
   }
 
-  case object ConfigStepError extends Errors {
+  case object ConfigInputError extends Errors {
     override val code: Int = -102
+    override val message: String = "The configuration for the input is incorrect"
+  }
+
+  case object ConfigStepError extends Errors {
+    override val code: Int = -103
     override val message: String = "The configuration for the step is incorrect"
+  }
+
+  case object ConfigOutputError extends Errors {
+    override val code: Int = -104
+    override val message: String = "The configuration for the output is incorrect"
   }
 
   case object UnknownHoolokError extends Errors {
