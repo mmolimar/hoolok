@@ -1,6 +1,9 @@
 package com.github.mmolimar.hoolok
 
-import com.github.mmolimar.hoolok.annotations._
+import com.github.mmolimar.hoolok.annotations.{InputKind, OutputKind, StepKind}
+import com.github.mmolimar.hoolok.inputs.Input
+import com.github.mmolimar.hoolok.outputs.Output
+import com.github.mmolimar.hoolok.steps.Step
 import org.reflections.Reflections
 
 import java.lang.reflect.Modifier

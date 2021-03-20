@@ -4,10 +4,17 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SparkSession.Builder
 import org.apache.spark.sql.functions.col
 
-// scalastyle:off
 object implicits {
 
   implicit class SparkSessionBuilderOptions(builder: Builder) {
+
+    def withHiveSupport(enable: Option[Boolean]): Builder = {
+      if (!enable.getOrElse(false)) {
+        builder.enableHiveSupport()
+      } else {
+        builder
+      }
+    }
 
     def withSparkConf(sparkConf: Map[String, String]): Builder = {
       sparkConf.foldLeft(builder)((builder, conf) => builder.config(conf._1, conf._2))

@@ -13,6 +13,7 @@ package object hoolok {
 
   private[hoolok] case class HoolokAppConfig(
                                               name: String,
+                                              enableHiveSupport: Option[Boolean],
                                               sparkConf: Option[Map[String, String]],
                                               sparkContext: Option[HoolokSparkContextConfig]
                                             ) extends Config
@@ -21,7 +22,8 @@ package object hoolok {
                                                        archive: Option[String],
                                                        description: Option[String],
                                                        file: Option[String],
-                                                       jar: Option[String]
+                                                       jar: Option[String],
+                                                       hadoopConfiguration: Option[Map[String, String]]
                                                      ) extends Config
 
   private[hoolok] case class HoolokInputConfig(

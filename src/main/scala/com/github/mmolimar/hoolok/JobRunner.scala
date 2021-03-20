@@ -3,6 +3,9 @@ package com.github.mmolimar.hoolok
 import cats.syntax.either.catsSyntaxEither
 import com.github.mmolimar.hoolok.errors.UnknownHoolokError
 import com.github.mmolimar.hoolok.implicits.SparkSessionBuilderOptions
+import com.github.mmolimar.hoolok.inputs.{Input, InputFactory}
+import com.github.mmolimar.hoolok.outputs.{Output, OutputFactory}
+import com.github.mmolimar.hoolok.steps.{Step, StepFactory}
 import io.circe.generic.auto.exportDecoder
 import io.circe.{Error, yaml}
 import org.apache.spark.internal.Logging
@@ -32,9 +35,9 @@ private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
       throw new InvalidConfigException("The YAML config file must have, at least one input and one output.")
     }
     logInfo("Validating inputs, steps and outputs config...")
-    val inputs = config.inputs.map(Input(_))
-    val steps = config.steps.map(Step(_))
-    val outputs = config.outputs.map(Output(_))
+    val inputs = config.inputs.map(InputFactory(_))
+    val steps = config.steps.map(StepFactory(_))
+    val outputs = config.outputs.map(OutputFactory(_))
 
     (inputs, steps, outputs)
   }
@@ -43,6 +46,7 @@ private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
     logInfo(s"Initializing Spark Session for '${config.app.name}'.")
     val spark = SparkSession.builder()
       .appName(appConfig.name)
+      .withHiveSupport(appConfig.enableHiveSupport)
       .withSparkConf(appConfig.sparkConf.getOrElse(Map.empty))
       .getOrCreate()
 
@@ -51,6 +55,9 @@ private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
       sc.description.foreach(spark.sparkContext.setJobDescription)
       sc.file.foreach(spark.sparkContext.addArchive)
       sc.jar.foreach(spark.sparkContext.addJar)
+      sc.hadoopConfiguration.getOrElse(Map.empty).foreach {
+        case (k, v) => spark.sparkContext.hadoopConfiguration.set(k, v)
+      }
     }
 
     spark

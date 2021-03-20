@@ -38,7 +38,6 @@ class UnknownHoolokError(
                           cause: Throwable
                         ) extends HoolokException(UnknownHoolokError, Some(message), cause)
 
-// scalastyle:off
 private[hoolok] object errors {
 
   sealed trait Errors {
