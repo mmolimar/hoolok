@@ -13,6 +13,8 @@ libraryDependencies ++= {
   val sparkVersion = "3.1.1"
   val scalaTestVersion = "3.2.6"
   val circeVersion = "0.13.0"
+  val reflectionsVersion = "0.9.12"
+  val sparKJsonSchemaVersion = "0.6.3"
 
   Seq(
     "org.apache.spark" %% "spark-core" % sparkVersion % Compile,
@@ -20,10 +22,11 @@ libraryDependencies ++= {
     "org.apache.spark" %% "spark-avro" % sparkVersion % Compile,
     "org.apache.spark" %% "spark-streaming" % sparkVersion % Compile,
     "org.apache.spark" %% "spark-hive" % sparkVersion % Compile,
+
     "io.circe" %% "circe-generic" % circeVersion,
     "io.circe" %% "circe-yaml" % circeVersion,
-
-    "org.reflections" % "reflections" % "0.9.12",
+    "org.reflections" % "reflections" % reflectionsVersion,
+    "org.zalando" %% "spark-json-schema" % sparKJsonSchemaVersion,
 
     "org.scalatest" %% "scalatest-wordspec" % scalaTestVersion % Test,
     "org.scalatest" %% "scalatest-shouldmatchers" % scalaTestVersion % Test

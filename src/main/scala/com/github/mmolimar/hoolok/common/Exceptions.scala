@@ -43,6 +43,11 @@ class SchemaValidationException(
                                  cause: Throwable = None.orNull
                                ) extends HoolokException(SchemaValidationError, Some(message), cause)
 
+class SchemaReadException(
+                                 message: String,
+                                 cause: Throwable = None.orNull
+                               ) extends HoolokException(SchemaReadError, Some(message), cause)
+
 class StreamGracefulShutdownConfigException(
                                              message: String,
                                              cause: Throwable = None.orNull
@@ -100,6 +105,11 @@ private[hoolok] object Errors {
   case object SchemaValidationError extends Errors {
     override val code: Int = -200
     override val message: String = "The schema in the dataframe does not match with the one provided"
+  }
+
+  case object SchemaReadError extends Errors {
+    override val code: Int = -201
+    override val message: String = "The schema specified cannot be read"
   }
 
   case object StreamGracefulShutdownConfigError extends Errors {

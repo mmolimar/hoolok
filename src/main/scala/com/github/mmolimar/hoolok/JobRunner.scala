@@ -37,8 +37,9 @@ private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
     if (spark.streams.active.nonEmpty) {
       spark.streams.awaitAnyTermination()
     }
-
   }
+
+  def stop(): Unit = spark.stop()
 
   private[hoolok] def validate(config: HoolokConfig): (List[Schema], List[Input], List[Step], List[Output]) = {
     if (config.inputs.isEmpty || config.outputs.isEmpty) {
