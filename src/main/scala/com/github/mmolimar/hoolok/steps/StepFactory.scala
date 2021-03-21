@@ -1,7 +1,8 @@
 package com.github.mmolimar.hoolok.steps
 
-import com.github.mmolimar.hoolok.Utils.inspectSteps
-import com.github.mmolimar.hoolok.{HoolokStepConfig, InvalidStepConfigException}
+import com.github.mmolimar.hoolok.HoolokStepConfig
+import com.github.mmolimar.hoolok.common.InvalidStepConfigException
+import com.github.mmolimar.hoolok.common.Utils.inspectSteps
 import org.apache.spark.sql.SparkSession
 
 trait Step {

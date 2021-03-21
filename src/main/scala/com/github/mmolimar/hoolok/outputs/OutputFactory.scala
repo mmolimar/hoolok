@@ -1,7 +1,8 @@
 package com.github.mmolimar.hoolok.outputs
 
-import com.github.mmolimar.hoolok.Utils.inspectOutputs
-import com.github.mmolimar.hoolok.{HoolokOutputConfig, InvalidOutputConfigException}
+import com.github.mmolimar.hoolok.HoolokOutputConfig
+import com.github.mmolimar.hoolok.common.InvalidOutputConfigException
+import com.github.mmolimar.hoolok.common.Utils.inspectOutputs
 import org.apache.spark.sql.SparkSession
 
 trait Output {

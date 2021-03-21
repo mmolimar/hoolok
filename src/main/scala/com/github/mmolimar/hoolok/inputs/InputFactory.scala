@@ -1,7 +1,8 @@
 package com.github.mmolimar.hoolok.inputs
 
-import com.github.mmolimar.hoolok.{HoolokInputConfig, InvalidInputConfigException}
-import com.github.mmolimar.hoolok.Utils.inspectInputs
+import com.github.mmolimar.hoolok.HoolokInputConfig
+import com.github.mmolimar.hoolok.common.InvalidInputConfigException
+import com.github.mmolimar.hoolok.common.Utils.inspectInputs
 import org.apache.spark.sql.SparkSession
 
 

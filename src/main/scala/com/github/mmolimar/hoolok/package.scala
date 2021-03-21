@@ -6,6 +6,7 @@ package object hoolok {
 
   private[hoolok] case class HoolokConfig(
                                            app: HoolokAppConfig,
+                                           schemas: Option[List[HoolokSchemaConfig]],
                                            inputs: List[HoolokInputConfig],
                                            steps: List[HoolokStepConfig],
                                            outputs: List[HoolokOutputConfig]
@@ -26,12 +27,21 @@ package object hoolok {
                                                        hadoopConfiguration: Option[Map[String, String]]
                                                      ) extends Config
 
+  private[hoolok] case class HoolokSchemaConfig(
+                                                 id: String,
+                                                 kind: String,
+                                                 format: String,
+                                                 options: Option[Map[String, String]]
+                                               ) extends Config
+
   private[hoolok] case class HoolokInputConfig(
                                                 id: String,
                                                 format: String,
                                                 kind: String,
+                                                schema: Option[String],
                                                 coalesce: Option[Int],
                                                 repartition: Option[HoolokRepartitionConfig],
+                                                watermark: Option[HoolokWatermarkConfig],
                                                 options: Option[Map[String, String]]
                                               ) extends Config
 
@@ -46,8 +56,10 @@ package object hoolok {
                                                  format: String,
                                                  mode: String,
                                                  kind: String,
+                                                 schema: Option[String],
                                                  coalesce: Option[Int],
                                                  repartition: Option[HoolokRepartitionConfig],
+                                                 watermark: Option[HoolokWatermarkConfig],
                                                  options: Option[Map[String, String]],
                                                  partitionBy: Option[List[String]],
                                                  trigger: Option[String]
@@ -57,5 +69,11 @@ package object hoolok {
                                                       numPartitions: Option[Int],
                                                       partitionExprs: Option[List[String]]
                                                     ) extends Config
+
+
+  private[hoolok] case class HoolokWatermarkConfig(
+                                                    eventTime: String,
+                                                    delayThreshold: String
+                                                  ) extends Config
 
 }

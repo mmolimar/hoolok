@@ -1,10 +1,12 @@
 package com.github.mmolimar.hoolok
 
 import cats.syntax.either.catsSyntaxEither
-import com.github.mmolimar.hoolok.errors.UnknownHoolokError
-import com.github.mmolimar.hoolok.implicits.SparkSessionBuilderOptions
+import com.github.mmolimar.hoolok.common.Errors.UnknownHoolokError
+import com.github.mmolimar.hoolok.common.Implicits.SparkSessionBuilderOptions
+import com.github.mmolimar.hoolok.common.{HoolokException, InvalidConfigException, MissingConfigFileException}
 import com.github.mmolimar.hoolok.inputs.{Input, InputFactory}
 import com.github.mmolimar.hoolok.outputs.{Output, OutputFactory}
+import com.github.mmolimar.hoolok.schemas.{Schema, SchemaFactory}
 import com.github.mmolimar.hoolok.steps.{Step, StepFactory}
 import io.circe.generic.auto.exportDecoder
 import io.circe.{Error, yaml}
@@ -15,10 +17,13 @@ import java.io.FileReader
 
 private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
 
-  lazy implicit val spark: SparkSession = initialize(config.app)
+  private implicit val spark: SparkSession = initialize(config.app)
 
   def execute(): Unit = {
-    val (inputs, steps, outputs) = validate(config)
+    val (schemas, inputs, steps, outputs) = validate(config)
+
+    logInfo("Registering schemas...")
+    schemas.foreach(_.register())
 
     logInfo("Reading inputs...")
     inputs.foreach(_.read())
@@ -28,18 +33,24 @@ private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
 
     logInfo("Writing outputs...")
     outputs.foreach(_.write())
+
+    if (spark.streams.active.nonEmpty) {
+      spark.streams.awaitAnyTermination()
+    }
+
   }
 
-  private[hoolok] def validate(config: HoolokConfig): (List[Input], List[Step], List[Output]) = {
+  private[hoolok] def validate(config: HoolokConfig): (List[Schema], List[Input], List[Step], List[Output]) = {
     if (config.inputs.isEmpty || config.outputs.isEmpty) {
       throw new InvalidConfigException("The YAML config file must have, at least one input and one output.")
     }
-    logInfo("Validating inputs, steps and outputs config...")
+    logInfo("Validating schemas, inputs, steps and outputs config...")
+    val schemas = config.schemas.getOrElse(List.empty).map(SchemaFactory(_))
     val inputs = config.inputs.map(InputFactory(_))
     val steps = config.steps.map(StepFactory(_))
     val outputs = config.outputs.map(OutputFactory(_))
 
-    (inputs, steps, outputs)
+    (schemas, inputs, steps, outputs)
   }
 
   private[hoolok] def initialize(appConfig: HoolokAppConfig): SparkSession = {

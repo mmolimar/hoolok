@@ -1,20 +1,48 @@
 package com.github.mmolimar.hoolok.outputs
 
 import com.github.mmolimar.hoolok.HoolokOutputConfig
+import com.github.mmolimar.hoolok.common.Implicits.DataframeEnricher
+import com.github.mmolimar.hoolok.common.SchemaValidationException
+import com.github.mmolimar.hoolok.schemas.SchemaManager
 import org.apache.spark.internal.Logging
-import com.github.mmolimar.hoolok.implicits.DataframeEnricher
+import org.apache.spark.sql.types.{ArrayType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 abstract class BaseOutput(override val config: HoolokOutputConfig)
                          (implicit spark: SparkSession) extends Output with Logging {
 
   final def write(): Unit = {
-    logInfo(s"Writing dataframe for table '${config.id}' with format '${config.format}'.'")
+    logInfo(s"Writing output for ID '${config.id}' with format '${config.format}'.'")
     val dataframe = spark.table(config.id)
       .possiblyWithCoalesce(config.coalesce)
       .possiblyWithRepartition(config.repartition)
+      .possiblyWithWatermark(config.watermark)
 
+    config.schema.foreach(schema => validate(dataframe, SchemaManager.getSchema(schema)))
     writeInternal(dataframe)
+  }
+
+  private def validate(dataFrame: DataFrame, schema: StructType): Unit = {
+    def validateFields(dfFields: Array[StructField], schemaFields: Array[StructField]): Boolean = {
+      dfFields.forall { sf =>
+        sf.dataType match {
+          case s: StructType =>
+            schemaFields.find(f => f.name == sf.name && f.dataType == sf.dataType)
+              .exists(field => validateFields(s.fields, field.dataType.asInstanceOf[StructType].fields))
+          case a: ArrayType => schemaFields.find(f => f.name == sf.name && f.dataType == sf.dataType)
+            .map(_.dataType.asInstanceOf[ArrayType])
+            .exists(array => array.elementType == a.elementType && array.containsNull == a.containsNull)
+          case _ => schemaFields.exists(f => f.name == sf.name && f.dataType == sf.dataType)
+        }
+      }
+    }
+
+    if (!validateFields(dataFrame.schema.fields, schema.fields)) {
+      throw new SchemaValidationException(s"Dataframe with id '${config.id}' does not match " +
+        s"with the schema '${config.schema.getOrElse("")}'.")
+    }
+    logInfo(s"Dataframe with ID '${config.id}' has been validated successfully " +
+      s"against schema ID '${config.schema.getOrElse("")}'.")
   }
 
   protected def writeInternal(dataFrame: DataFrame): Unit

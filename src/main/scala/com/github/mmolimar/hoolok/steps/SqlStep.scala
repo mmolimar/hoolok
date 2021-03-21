@@ -1,7 +1,8 @@
 package com.github.mmolimar.hoolok.steps
 
+import com.github.mmolimar.hoolok.HoolokStepConfig
 import com.github.mmolimar.hoolok.annotations.StepKind
-import com.github.mmolimar.hoolok.{HoolokStepConfig, InvalidConfigException}
+import com.github.mmolimar.hoolok.common.InvalidConfigException
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 @StepKind(kind = "sql")
