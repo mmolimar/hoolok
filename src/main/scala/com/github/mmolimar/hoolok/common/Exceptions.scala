@@ -11,12 +11,12 @@ private[hoolok] sealed class HoolokException(
 class MissingConfigFileException(
                                   message: String,
                                   cause: Throwable = None.orNull
-                                ) extends HoolokException(ConfigError, Some(message), cause)
+                                ) extends HoolokException(MissingConfigError, Some(message), cause)
 
-class InvalidConfigException(
-                              message: String,
-                              cause: Throwable = None.orNull
-                            ) extends HoolokException(ConfigError, Some(message), cause)
+class InvalidYamlFileException(
+                                message: String,
+                                cause: Throwable = None.orNull
+                              ) extends HoolokException(YamlFileError, Some(message), cause)
 
 class InvalidSchemaConfigException(
                                     message: String,
@@ -77,7 +77,7 @@ private[hoolok] object Errors {
     override val message: String = "Config file was not provided"
   }
 
-  case object ConfigError extends Errors {
+  case object YamlFileError extends Errors {
     override val code: Int = -101
     override val message: String = "Hoolok YAML file is not valid"
   }

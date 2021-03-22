@@ -4,8 +4,8 @@ import com.github.mmolimar.hoolok.schemas.SchemaManager
 import com.github.mmolimar.hoolok.{HoolokRepartitionConfig, HoolokWatermarkConfig}
 import org.apache.spark.sql.SparkSession.Builder
 import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.streaming.DataStreamReader
-import org.apache.spark.sql.{DataFrame, DataFrameReader}
+import org.apache.spark.sql.streaming.{DataStreamReader, DataStreamWriter, Trigger}
+import org.apache.spark.sql.{DataFrame, DataFrameReader, Dataset}
 
 object Implicits {
 
@@ -41,7 +41,6 @@ object Implicits {
 
   }
 
-
   implicit class DataframeEnricher(dataframe: DataFrame) {
 
     def possiblyWithCoalesce(coalesce: Option[Int]): DataFrame = {
@@ -56,14 +55,37 @@ object Implicits {
           dataframe.repartition(partitionExprs.map(col): _*)
         case HoolokRepartitionConfig(Some(numPartitions), Some(partitionExprs)) =>
           dataframe.repartition(numPartitions, partitionExprs.map(col): _*)
-        case _ =>
-          throw new InvalidConfigException("Repartition is not configured properly. You must configure " +
-            "'numPartitions' and/or 'partitionExprs'.")
+        case _ => dataframe
       }.getOrElse(dataframe)
     }
 
     def possiblyWithWatermark(watermark: Option[HoolokWatermarkConfig]): DataFrame = {
       watermark.map(w => dataframe.withWatermark(w.eventTime, w.delayThreshold)).getOrElse(dataframe)
+    }
+
+  }
+
+  implicit class DataStreamWriterEnricher[T](dsw: DataStreamWriter[T]) {
+
+    private val once = "once( )*(\\( *\\))?".r
+    private val continuous = "continuous( )*\\(( *[0-9]+ *)*\\)".r
+    private val processing = "processingtime( )*\\(( *[0-9]+ *)*\\)".r
+
+    private[common] def triggerType(trigger: String): Trigger = {
+      trigger.trim.toLowerCase match {
+        case once(_, _) | once(_) | once() => Trigger.Once()
+        case continuous(_, interval) => Trigger.Continuous(interval.trim.toLong)
+        case processing(_, interval) => Trigger.ProcessingTime(interval.trim.toLong)
+        case _ => throw new InvalidOutputConfigException(s"Trigger value '${trigger}' cannot be parsed.")
+      }
+    }
+
+    def possiblyWithTrigger(trigger: Option[String]): DataStreamWriter[T] = {
+      trigger.map(t => dsw.trigger(triggerType(t))).getOrElse(dsw)
+    }
+
+    def possiblyWithCustomForeachBatch(function: Option[(Dataset[T], Long) => Unit]): DataStreamWriter[T] = {
+      function.map(fn => dsw.foreachBatch(fn)).getOrElse(dsw)
     }
 
   }

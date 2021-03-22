@@ -2,7 +2,7 @@ package com.github.mmolimar.hoolok.outputs
 
 import com.github.mmolimar.hoolok.HoolokOutputConfig
 import com.github.mmolimar.hoolok.annotations.OutputBatchKind
-import com.github.mmolimar.hoolok.common.InvalidConfigException
+import com.github.mmolimar.hoolok.common.InvalidOutputConfigException
 import org.apache.spark.sql.{DataFrame, DataFrameWriter, SparkSession}
 
 abstract class BatchBasedOutput(config: HoolokOutputConfig)
@@ -25,7 +25,7 @@ class TableBatchOutput(config: HoolokOutputConfig)
                       (implicit spark: SparkSession) extends BatchBasedOutput(config)(spark) {
 
   val tableName: String = config.options.flatMap(_.get("tableName")).getOrElse {
-    throw new InvalidConfigException("Table output is not configured properly. The option 'tableName' is expected.")
+    throw new InvalidOutputConfigException("Table output is not configured properly. The option 'tableName' is expected.")
   }
 
   protected def save[T](dfr: DataFrameWriter[T]): Unit = dfr.saveAsTable(tableName)

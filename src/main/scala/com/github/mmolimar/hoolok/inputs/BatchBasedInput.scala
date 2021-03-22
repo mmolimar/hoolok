@@ -3,7 +3,7 @@ package com.github.mmolimar.hoolok.inputs
 import com.github.mmolimar.hoolok.HoolokInputConfig
 import com.github.mmolimar.hoolok.annotations.InputBatchKind
 import com.github.mmolimar.hoolok.common.Implicits.DataFrameReaderWithSchema
-import com.github.mmolimar.hoolok.common.InvalidConfigException
+import com.github.mmolimar.hoolok.common.InvalidInputConfigException
 import org.apache.spark.sql.{DataFrame, DataFrameReader, SparkSession}
 
 abstract class BatchBasedInput(config: HoolokInputConfig)
@@ -25,7 +25,7 @@ class TableBatchInput(config: HoolokInputConfig)
                      (implicit spark: SparkSession) extends BatchBasedInput(config)(spark) {
 
   val tableName: String = config.options.flatMap(_.get("tableName")).getOrElse {
-    throw new InvalidConfigException(s"Table batch input for ID '${config.id}' is not configured properly. " +
+    throw new InvalidInputConfigException(s"Table batch input for ID '${config.id}' is not configured properly. " +
       "The option 'tableName' is expected.")
   }
 

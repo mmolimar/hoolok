@@ -2,10 +2,11 @@ package com.github.mmolimar.hoolok.outputs
 
 import com.github.mmolimar.hoolok.HoolokOutputConfig
 import com.github.mmolimar.hoolok.annotations.OutputStreamKind
-import com.github.mmolimar.hoolok.common.{InvalidConfigException, StreamGracefulShutdownConfigException, StreamGracefulShutdownStopException}
+import com.github.mmolimar.hoolok.common.Implicits.DataStreamWriterEnricher
+import com.github.mmolimar.hoolok.common.{InvalidOutputConfigException, StreamGracefulShutdownConfigException, StreamGracefulShutdownStopException}
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.streaming.{DataStreamWriter, StreamingQuery}
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 import java.time.format.DateTimeFormatter
 import java.util.UUID
@@ -31,10 +32,14 @@ abstract class StreamBasedOutput(config: HoolokOutputConfig)
         .format(config.format)
         .options(config.options.getOrElse(Map.empty))
         .partitionBy(config.partitionBy.orNull: _*)
+        .possiblyWithTrigger(config.trigger)
+        .possiblyWithCustomForeachBatch(customForeachBatch)
     )
 
     gracefulShutdownPath.foreach(path => enableGracefulShutdown(query, path))
   }
+
+  def customForeachBatch[T]: Option[(Dataset[T], Long) => Unit] = None
 
   def save[T](dfw: DataStreamWriter[T]): StreamingQuery
 
@@ -86,7 +91,7 @@ class TableStreamOutput(config: HoolokOutputConfig)
                        (implicit spark: SparkSession) extends StreamBasedOutput(config)(spark) {
 
   val tableName: String = config.options.flatMap(_.get("tableName")).getOrElse {
-    throw new InvalidConfigException(s"Table stream output for ID '${config.id}' is not configured properly. " +
+    throw new InvalidOutputConfigException(s"Table stream output for ID '${config.id}' is not configured properly. " +
       "The option 'tableName' is expected.")
   }
 

@@ -2,7 +2,7 @@ package com.github.mmolimar.hoolok.schemas
 
 import com.github.mmolimar.hoolok.HoolokSchemaConfig
 import com.github.mmolimar.hoolok.common.InvalidSchemaConfigException
-import org.apache.avro.Schema
+import org.apache.avro.{Schema => AvroSchema}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.avro.SchemaConverters
@@ -16,7 +16,7 @@ abstract class BaseSchema(override val config: HoolokSchemaConfig)
     val schema: StructType = config.format.trim.toLowerCase match {
       case "spark-ddl" => StructType.fromDDL(schemaContent)
       case "json-schema" => SchemaConverter.convertContent(schemaContent)
-      case "avro-schema" => SchemaConverters.toSqlType(new Schema.Parser().parse(schemaContent))
+      case "avro-schema" => SchemaConverters.toSqlType(new AvroSchema.Parser().parse(schemaContent))
         .dataType.asInstanceOf[StructType]
       case _ => throw new InvalidSchemaConfigException(s"Schema format '${config.format}' is not supported.")
     }

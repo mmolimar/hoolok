@@ -3,7 +3,7 @@ package com.github.mmolimar.hoolok
 import cats.syntax.either.catsSyntaxEither
 import com.github.mmolimar.hoolok.common.Errors.{HoolokSuccess, UnknownHoolokError}
 import com.github.mmolimar.hoolok.common.Implicits.SparkSessionBuilderOptions
-import com.github.mmolimar.hoolok.common.{HoolokException, InvalidConfigException, MissingConfigFileException}
+import com.github.mmolimar.hoolok.common.{HoolokException, InvalidYamlFileException, MissingConfigFileException}
 import com.github.mmolimar.hoolok.inputs.{Input, InputFactory}
 import com.github.mmolimar.hoolok.outputs.{Output, OutputFactory}
 import com.github.mmolimar.hoolok.schemas.{Schema, SchemaFactory}
@@ -52,7 +52,7 @@ private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
 
   private[hoolok] def validate(config: HoolokConfig): (List[Schema], List[Input], List[Step], List[Output]) = {
     if (config.inputs.isEmpty || config.outputs.isEmpty) {
-      throw new InvalidConfigException("The YAML config file must have, at least one input and one output.")
+      throw new MissingConfigFileException("The YAML config file must have, at least one input and one output.")
     }
     logInfo("Validating schemas, inputs, steps and outputs config...")
     val schemas = config.schemas.getOrElse(List.empty).map(SchemaFactory(_))
@@ -109,7 +109,7 @@ object JobRunner extends App with Logging {
   private val config = yaml.parser.parse(new FileReader(args.head))
     .leftMap(err => err: Error)
     .flatMap(_.as[HoolokConfig])
-    .valueOr(err => throw new InvalidConfigException(
+    .valueOr(err => throw new InvalidYamlFileException(
       message = s"Cannot parse YAML file. ${err.getMessage}",
       cause = err
     ))

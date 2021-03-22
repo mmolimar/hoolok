@@ -3,7 +3,7 @@ package com.github.mmolimar.hoolok.schemas
 import com.github.mmolimar.hoolok.HoolokSchemaConfig
 import com.github.mmolimar.hoolok.annotations.SchemaKind
 import com.github.mmolimar.hoolok.common.Utils.closer
-import com.github.mmolimar.hoolok.common.{InvalidConfigException, SchemaReadException}
+import com.github.mmolimar.hoolok.common.{InvalidSchemaConfigException, SchemaReadException}
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.SparkSession
 
@@ -16,7 +16,7 @@ class UriSchema(config: HoolokSchemaConfig)
                (implicit spark: SparkSession) extends BaseSchema(config)(spark) {
 
   val schemaPath: Path = config.options.flatMap(_.get("path").map(new Path(_))).getOrElse {
-    throw new InvalidConfigException("URI schema is not configured properly. The option 'path' is expected.")
+    throw new InvalidSchemaConfigException("URI schema is not configured properly. The option 'path' is expected.")
   }
 
   override def schemaContent: String = {

@@ -2,7 +2,7 @@ package com.github.mmolimar.hoolok.steps
 
 import com.github.mmolimar.hoolok.HoolokStepConfig
 import com.github.mmolimar.hoolok.annotations.StepKind
-import com.github.mmolimar.hoolok.common.InvalidConfigException
+import com.github.mmolimar.hoolok.common.InvalidStepConfigException
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 @StepKind(kind = "sql")
@@ -11,7 +11,7 @@ class SqlStep(config: HoolokStepConfig)
 
 
   val query: String = config.options.flatMap(_.get("query")).getOrElse {
-    throw new InvalidConfigException("SQL step is not configured properly. The option 'query' is expected.")
+    throw new InvalidStepConfigException("SQL step is not configured properly. The option 'query' is expected.")
   }
 
   def processInternal(): DataFrame = {
@@ -20,4 +20,3 @@ class SqlStep(config: HoolokStepConfig)
   }
 
 }
-

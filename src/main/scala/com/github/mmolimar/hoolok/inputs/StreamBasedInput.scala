@@ -3,7 +3,7 @@ package com.github.mmolimar.hoolok.inputs
 import com.github.mmolimar.hoolok.HoolokInputConfig
 import com.github.mmolimar.hoolok.annotations.InputStreamKind
 import com.github.mmolimar.hoolok.common.Implicits.DataStreamReaderWithSchema
-import com.github.mmolimar.hoolok.common.InvalidConfigException
+import com.github.mmolimar.hoolok.common.InvalidInputConfigException
 import org.apache.spark.sql.streaming.DataStreamReader
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -27,7 +27,7 @@ class TableStreamInput(config: HoolokInputConfig)
                       (implicit spark: SparkSession) extends StreamBasedInput(config)(spark) {
 
   val tableName: String = config.options.flatMap(_.get("tableName")).getOrElse {
-    throw new InvalidConfigException(s"Table stream input for ID '${config.id}' is not configured properly. " +
+    throw new InvalidInputConfigException(s"Table stream input for ID '${config.id}' is not configured properly. " +
       "The option 'tableName' is expected.")
   }
 
