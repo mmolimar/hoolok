@@ -44,9 +44,9 @@ class SchemaValidationException(
                                ) extends HoolokException(SchemaValidationError, Some(message), cause)
 
 class SchemaReadException(
-                                 message: String,
-                                 cause: Throwable = None.orNull
-                               ) extends HoolokException(SchemaReadError, Some(message), cause)
+                           message: String,
+                           cause: Throwable = None.orNull
+                         ) extends HoolokException(SchemaReadError, Some(message), cause)
 
 class StreamGracefulShutdownConfigException(
                                              message: String,
@@ -109,7 +109,7 @@ private[hoolok] object Errors {
 
   case object SchemaReadError extends Errors {
     override val code: Int = -201
-    override val message: String = "The schema specified cannot be read"
+    override val message: String = "Error loading schema"
   }
 
   case object StreamGracefulShutdownConfigError extends Errors {
@@ -125,6 +125,11 @@ private[hoolok] object Errors {
   case object UnknownHoolokError extends Errors {
     override val code: Int = -900
     override val message: String = "Unexpected error when executing job"
+  }
+
+  case object HoolokSuccess extends Errors {
+    override val code: Int = 0
+    override val message: String = "Success"
   }
 
 }

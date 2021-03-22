@@ -1,6 +1,6 @@
 package com.github.mmolimar.hoolok.common
 
-import com.github.mmolimar.hoolok.annotations.{InputKind, OutputKind, SchemaKind, StepKind}
+import com.github.mmolimar.hoolok.annotations._
 import com.github.mmolimar.hoolok.inputs.Input
 import com.github.mmolimar.hoolok.outputs.Output
 import com.github.mmolimar.hoolok.schemas.Schema
@@ -19,16 +19,24 @@ object Utils {
     classesByName[SchemaKind, Schema]
   }
 
-  def inspectInputs: Map[String, Class[_ <: Input]] = {
-    classesByName[InputKind, Input]
+  def inspectBatchInputs: Map[String, Class[_ <: Input]] = {
+    classesByName[InputBatchKind, Input]
+  }
+
+  def inspectStreamInputs: Map[String, Class[_ <: Input]] = {
+    classesByName[InputStreamKind, Input]
   }
 
   def inspectSteps: Map[String, Class[_ <: Step]] = {
     classesByName[StepKind, Step]
   }
 
-  def inspectOutputs: Map[String, Class[_ <: Output]] = {
-    classesByName[OutputKind, Output]
+  def inspectBatchOutputs: Map[String, Class[_ <: Output]] = {
+    classesByName[OutputBatchKind, Output]
+  }
+
+  def inspectStreamOutputs: Map[String, Class[_ <: Output]] = {
+    classesByName[OutputStreamKind, Output]
   }
 
   private def classesByName[A: TypeTag, C: TypeTag]: Map[String, Class[_ <: C]] = {
@@ -53,6 +61,14 @@ object Utils {
         case (Some(n), c: Class[_]) => n -> c.asInstanceOf[Class[C]]
       }
       .toMap
+  }
+
+  def closer[C <: AutoCloseable, R](resource: C)(block: C => R): R = {
+    try {
+      block(resource)
+    } finally {
+      resource.close()
+    }
   }
 
 }

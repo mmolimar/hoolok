@@ -1,3 +1,5 @@
 package com.github.mmolimar.hoolok.annotations
 
-case class InputKind(kind: String) extends scala.annotation.StaticAnnotation
+case class InputBatchKind(subtype: String) extends BatchKind(subtype = subtype)
+
+case class InputStreamKind(subtype: String) extends StreamKind(subtype = subtype)

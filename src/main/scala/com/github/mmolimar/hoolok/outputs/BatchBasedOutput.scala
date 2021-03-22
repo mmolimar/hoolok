@@ -1,18 +1,41 @@
 package com.github.mmolimar.hoolok.outputs
 
 import com.github.mmolimar.hoolok.HoolokOutputConfig
-import com.github.mmolimar.hoolok.annotations.OutputKind
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import com.github.mmolimar.hoolok.annotations.OutputBatchKind
+import com.github.mmolimar.hoolok.common.InvalidConfigException
+import org.apache.spark.sql.{DataFrame, DataFrameWriter, SparkSession}
 
-@OutputKind(kind = "batch")
-class BatchBasedOutput(config: HoolokOutputConfig)
-                      (implicit spark: SparkSession) extends BaseOutput(config)(spark) {
+abstract class BatchBasedOutput(config: HoolokOutputConfig)
+                               (implicit spark: SparkSession) extends BaseOutput(config)(spark) {
 
-  def writeInternal(dataframe: DataFrame): Unit = dataframe
-    .write
-    .mode(config.mode)
-    .format(config.format)
-    .partitionBy(config.partitionBy.orNull: _*)
-    .options(config.options.getOrElse(Map.empty))
-    .save()
+  override def writeInternal(dataframe: DataFrame): Unit = save(
+    dataframe
+      .write
+      .mode(config.mode)
+      .format(config.format)
+      .partitionBy(config.partitionBy.orNull: _*)
+      .options(config.options.getOrElse(Map.empty))
+  )
+
+  protected def save[T](dfr: DataFrameWriter[T]): Unit
+}
+
+@OutputBatchKind(subtype = "table")
+class TableBatchOutput(config: HoolokOutputConfig)
+                      (implicit spark: SparkSession) extends BatchBasedOutput(config)(spark) {
+
+  val tableName: String = config.options.flatMap(_.get("tableName")).getOrElse {
+    throw new InvalidConfigException("Table output is not configured properly. The option 'tableName' is expected.")
+  }
+
+  protected def save[T](dfr: DataFrameWriter[T]): Unit = dfr.saveAsTable(tableName)
+
+}
+
+@OutputBatchKind(subtype = "data-source")
+class DataSourceBatchOutput(config: HoolokOutputConfig)
+                           (implicit spark: SparkSession) extends BatchBasedOutput(config)(spark) {
+
+  protected def save[T](dfr: DataFrameWriter[T]): Unit = dfr.save()
+
 }

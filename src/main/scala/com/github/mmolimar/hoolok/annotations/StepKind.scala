@@ -1,3 +1,3 @@
 package com.github.mmolimar.hoolok.annotations
 
-case class StepKind(kind: String) extends scala.annotation.StaticAnnotation
+case class StepKind(kind: String) extends HoolokAnnotation

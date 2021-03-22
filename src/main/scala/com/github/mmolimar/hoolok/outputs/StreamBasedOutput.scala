@@ -1,19 +1,18 @@
 package com.github.mmolimar.hoolok.outputs
 
 import com.github.mmolimar.hoolok.HoolokOutputConfig
-import com.github.mmolimar.hoolok.annotations.OutputKind
-import com.github.mmolimar.hoolok.common.{StreamGracefulShutdownConfigException, StreamGracefulShutdownStopException}
+import com.github.mmolimar.hoolok.annotations.OutputStreamKind
+import com.github.mmolimar.hoolok.common.{InvalidConfigException, StreamGracefulShutdownConfigException, StreamGracefulShutdownStopException}
 import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.spark.sql.streaming.StreamingQuery
+import org.apache.spark.sql.streaming.{DataStreamWriter, StreamingQuery}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 import java.util.concurrent.{Executors, TimeUnit}
 
-@OutputKind(kind = "stream")
-class StreamBasedOutput(config: HoolokOutputConfig)
-                       (implicit spark: SparkSession) extends BaseOutput(config)(spark) {
+abstract class StreamBasedOutput(config: HoolokOutputConfig)
+                                (implicit spark: SparkSession) extends BaseOutput(config)(spark) {
 
   val gracefulShutdownPath: Option[String] = config.options.flatMap(_.get("gracefulShutdownPath"))
   val gracefulShutdownFileNotCreated: Boolean = config.options
@@ -25,16 +24,19 @@ class StreamBasedOutput(config: HoolokOutputConfig)
     .getOrElse(defaultGracefulShutdownDelay)
 
   def writeInternal(dataframe: DataFrame): Unit = {
-    val query = dataframe
-      .writeStream
-      .outputMode(config.mode)
-      .format(config.format)
-      .options(config.options.getOrElse(Map.empty))
-      .partitionBy(config.partitionBy.orNull: _*)
-      .start()
+    val query = save(
+      dataframe
+        .writeStream
+        .outputMode(config.mode)
+        .format(config.format)
+        .options(config.options.getOrElse(Map.empty))
+        .partitionBy(config.partitionBy.orNull: _*)
+    )
 
     gracefulShutdownPath.foreach(path => enableGracefulShutdown(query, path))
   }
+
+  def save[T](dfw: DataStreamWriter[T]): StreamingQuery
 
   private def enableGracefulShutdown(query: StreamingQuery, path: String): Unit = {
     val fileName: String = {
@@ -76,5 +78,26 @@ class StreamBasedOutput(config: HoolokOutputConfig)
     }
 
   }
+
+}
+
+@OutputStreamKind(subtype = "table")
+class TableStreamOutput(config: HoolokOutputConfig)
+                       (implicit spark: SparkSession) extends StreamBasedOutput(config)(spark) {
+
+  val tableName: String = config.options.flatMap(_.get("tableName")).getOrElse {
+    throw new InvalidConfigException(s"Table stream output for ID '${config.id}' is not configured properly. " +
+      "The option 'tableName' is expected.")
+  }
+
+  override def save[T](dfw: DataStreamWriter[T]): StreamingQuery = dfw.toTable(tableName)
+
+}
+
+@OutputStreamKind(subtype = "data-source")
+class DataSourceStreamOutput(config: HoolokOutputConfig)
+                            (implicit spark: SparkSession) extends StreamBasedOutput(config)(spark) {
+
+  override def save[T](dfw: DataStreamWriter[T]): StreamingQuery = dfw.start()
 
 }

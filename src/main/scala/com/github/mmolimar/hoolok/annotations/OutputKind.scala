@@ -1,3 +1,5 @@
 package com.github.mmolimar.hoolok.annotations
 
-case class OutputKind(kind: String) extends scala.annotation.StaticAnnotation
+case class OutputBatchKind(subtype: String) extends BatchKind(subtype = subtype)
+
+case class OutputStreamKind(subtype: String) extends StreamKind(subtype = subtype)

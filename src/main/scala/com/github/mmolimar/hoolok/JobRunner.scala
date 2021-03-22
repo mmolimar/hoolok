@@ -1,7 +1,7 @@
 package com.github.mmolimar.hoolok
 
 import cats.syntax.either.catsSyntaxEither
-import com.github.mmolimar.hoolok.common.Errors.UnknownHoolokError
+import com.github.mmolimar.hoolok.common.Errors.{HoolokSuccess, UnknownHoolokError}
 import com.github.mmolimar.hoolok.common.Implicits.SparkSessionBuilderOptions
 import com.github.mmolimar.hoolok.common.{HoolokException, InvalidConfigException, MissingConfigFileException}
 import com.github.mmolimar.hoolok.inputs.{Input, InputFactory}
@@ -14,10 +14,12 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
 
 import java.io.FileReader
+import scala.annotation.tailrec
+import scala.util.{Failure, Success, Try}
 
 private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
 
-  private implicit val spark: SparkSession = initialize(config.app)
+  private implicit lazy val spark: SparkSession = initialize(config.app)
 
   def execute(): Unit = {
     val (schemas, inputs, steps, outputs) = validate(config)
@@ -34,8 +36,15 @@ private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
     logInfo("Writing outputs...")
     outputs.foreach(_.write())
 
+    waitForStreams()
+  }
+
+  @tailrec
+  private def waitForStreams(): Unit = {
     if (spark.streams.active.nonEmpty) {
       spark.streams.awaitAnyTermination()
+      spark.streams.resetTerminated()
+      waitForStreams()
     }
   }
 
@@ -101,20 +110,24 @@ object JobRunner extends App with Logging {
     .leftMap(err => err: Error)
     .flatMap(_.as[HoolokConfig])
     .valueOr(err => throw new InvalidConfigException(
-      message = "Cannot parse YAML file.",
+      message = s"Cannot parse YAML file. ${err.getMessage}",
       cause = err
     ))
 
   logInfo("Executing Spark job with this job config: \n" + config)
-  try {
-    new JobRunner(config).execute()
-  } catch {
-    case he: HoolokException =>
+  val runner = new JobRunner(config)
+  val exitCode = Try {
+    runner.execute()
+  } match {
+    case Failure(he: HoolokException) =>
       logError(he.getMessage, he)
-      sys.exit(he.error.code)
-    case t: Throwable =>
-      logError("Unexpected error.", t)
-      sys.exit(UnknownHoolokError.code)
+      he.error.code
+    case Failure(t: Throwable) =>
+      logError(s"Unexpected error: ${t.getMessage}", t)
+      UnknownHoolokError.code
+    case Success(_) => HoolokSuccess.code
   }
+  runner.stop()
 
+  sys.exit(exitCode)
 }
