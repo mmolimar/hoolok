@@ -21,3 +21,20 @@ abstract class DataframeBasedStep(override val config: HoolokStepConfig)
   protected def fromDataframe(dataframe: DataFrame): DataFrame
 
 }
+
+abstract class DataframeBatchBasedStep(override val config: HoolokStepConfig)
+                                      (implicit spark: SparkSession) extends BaseStep(config) {
+
+  override protected def processInternal(): DataFrame = {
+    val dataframe = spark.table(config.id)
+    if (dataframe.isStreaming) {
+      logWarning(s"Step '${config.kind}' cannot be executed due to it is a streaming source for ID '${config.id}'")
+      dataframe
+    } else {
+      fromDataframe(spark.table(config.id))
+    }
+  }
+
+  protected def fromDataframe(dataframe: DataFrame): DataFrame
+
+}

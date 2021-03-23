@@ -6,7 +6,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 @StepKind(kind = "checkpoint")
 class CheckpointStep(config: HoolokStepConfig)
-                    (implicit spark: SparkSession) extends DataframeBasedStep(config)(spark) {
+                    (implicit spark: SparkSession) extends DataframeBatchBasedStep(config)(spark) {
 
   val eager: Boolean = config.options.flatMap(_.get("eager").map(_.toBoolean)).getOrElse(true)
   val reliableCheckpoint: Boolean = config.options.flatMap(_.get("reliableCheckpoint")).exists(_.toBoolean)

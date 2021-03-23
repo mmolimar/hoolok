@@ -7,7 +7,7 @@ import org.apache.spark.storage.StorageLevel
 
 @StepKind(kind = "cache")
 class CacheStep(config: HoolokStepConfig)
-               (implicit spark: SparkSession) extends DataframeBasedStep(config)(spark) {
+               (implicit spark: SparkSession) extends DataframeBatchBasedStep(config)(spark) {
 
   val storageLevel: StorageLevel = config.options.flatMap(_.get("storageLevel")
     .map(_.trim.toUpperCase).map(StorageLevel.fromString)).getOrElse(StorageLevel.MEMORY_AND_DISK)
