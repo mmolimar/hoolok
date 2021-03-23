@@ -24,7 +24,8 @@ package object hoolok {
                                                        description: Option[String],
                                                        file: Option[String],
                                                        jar: Option[String],
-                                                       hadoopConfiguration: Option[Map[String, String]]
+                                                       hadoopConfiguration: Option[Map[String, String]],
+                                                       checkpointDir: Option[String],
                                                      ) extends Config
 
   private[hoolok] case class HoolokSchemaConfig(

@@ -9,7 +9,6 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 class SqlStep(config: HoolokStepConfig)
              (implicit spark: SparkSession) extends BaseStep(config)(spark) {
 
-
   val query: String = config.options.flatMap(_.get("query")).getOrElse {
     throw new InvalidStepConfigException("SQL step is not configured properly. The option 'query' is expected.")
   }

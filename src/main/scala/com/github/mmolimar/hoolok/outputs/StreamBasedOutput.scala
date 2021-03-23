@@ -70,11 +70,11 @@ abstract class StreamBasedOutput(config: HoolokOutputConfig)
 
   }
 
-  private def gracefulShutdown(query: StreamingQuery, fs: FileSystem, marker: Path): Runnable = new Runnable {
+  def gracefulShutdown(query: StreamingQuery, fs: FileSystem, marker: Path): Runnable = new Runnable {
 
     def markerExists: Boolean = fs.exists(marker)
 
-    override def run(): Unit = if (!markerExists && query.isActive) {
+    override def run(): Unit = if (query.isActive && !markerExists) {
       logWarning(s"Stopping query '${query.id}' for stream with ID '${config.id}' " +
         s"due to file '$marker' does not exist.")
       query.stop()

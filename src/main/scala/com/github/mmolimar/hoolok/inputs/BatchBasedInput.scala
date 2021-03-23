@@ -18,6 +18,7 @@ abstract class BatchBasedInput(config: HoolokInputConfig)
   )
 
   protected def load(dfr: DataFrameReader): DataFrame
+
 }
 
 @InputBatchKind(subtype = "table")
