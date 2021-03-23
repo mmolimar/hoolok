@@ -8,7 +8,9 @@ import com.github.mmolimar.hoolok.inputs.{Input, InputFactory}
 import com.github.mmolimar.hoolok.outputs.{Output, OutputFactory}
 import com.github.mmolimar.hoolok.schemas.{Schema, SchemaFactory}
 import com.github.mmolimar.hoolok.steps.{Step, StepFactory}
-import io.circe.generic.auto.exportDecoder
+import io.circe.generic.auto._
+import io.circe.syntax._
+import io.circe.yaml.hparser
 import io.circe.{Error, yaml}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
@@ -79,6 +81,7 @@ private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
       sc.hadoopConfiguration.getOrElse(Map.empty).foreach {
         case (k, v) => spark.sparkContext.hadoopConfiguration.set(k, v)
       }
+      sc.checkpointDir.foreach(spark.sparkContext.setCheckpointDir)
     }
 
     spark
@@ -106,7 +109,7 @@ object JobRunner extends App with Logging {
       .stripMargin.format(BuildInfo.version))
 
   logInfo(s"Parsing Hoolok YAML file located at: '${args.head}'")
-  private val config = yaml.parser.parse(new FileReader(args.head))
+  private val config = hparser.parse(new FileReader(args.head))
     .leftMap(err => err: Error)
     .flatMap(_.as[HoolokConfig])
     .valueOr(err => throw new InvalidYamlFileException(
@@ -114,7 +117,9 @@ object JobRunner extends App with Logging {
       cause = err
     ))
 
-  logInfo("Executing Spark job with this job config: \n" + config)
+  val content = yaml.Printer(preserveOrder = true).pretty(config.asJson)
+
+  logInfo(s"Executing Hoolok Spark job with config: \n$content")
   val runner = new JobRunner(config)
   val exitCode = Try {
     runner.execute()

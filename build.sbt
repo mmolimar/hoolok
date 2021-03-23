@@ -13,8 +13,11 @@ libraryDependencies ++= {
   val sparkVersion = "3.1.1"
   val scalaTestVersion = "3.2.6"
   val circeVersion = "0.13.0"
+  val circeYamlVersion = "0.13.1"
+  val snakeYamlVersion = "1.28"
   val reflectionsVersion = "0.9.12"
   val sparKJsonSchemaVersion = "0.6.3"
+  val deltaVersion = "0.8.0"
 
   Seq(
     "org.apache.spark" %% "spark-core" % sparkVersion % Compile,
@@ -24,9 +27,12 @@ libraryDependencies ++= {
     "org.apache.spark" %% "spark-hive" % sparkVersion % Compile,
 
     "io.circe" %% "circe-generic" % circeVersion,
-    "io.circe" %% "circe-yaml" % circeVersion,
+    "io.circe" %% "circe-parser" % circeVersion,
+    "io.circe" %% "circe-yaml" % circeYamlVersion excludeAll ExclusionRule(organization = "org.yaml", name = "snakeyaml"),
+    "org.yaml" % "snakeyaml" % snakeYamlVersion,
     "org.reflections" % "reflections" % reflectionsVersion,
     "org.zalando" %% "spark-json-schema" % sparKJsonSchemaVersion,
+    "io.delta" %% "delta-core" % deltaVersion,
 
     "org.scalatest" %% "scalatest-wordspec" % scalaTestVersion % Test,
     "org.scalatest" %% "scalatest-shouldmatchers" % scalaTestVersion % Test
@@ -57,8 +63,8 @@ sourceGenerators in Compile += {
 }
 
 val hoolokMainClass = "com.github.mmolimar.hoolok.JobRunner"
-mainClass in (Compile, run) := Some(hoolokMainClass)
-run in Compile := Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)).evaluated
+mainClass in(Compile, run) := Some(hoolokMainClass)
+run in Compile := Defaults.runTask(fullClasspath in Compile, mainClass in(Compile, run), runner in(Compile, run)).evaluated
 fork in run := true
 
 mainClass in assembly := Some(hoolokMainClass)
