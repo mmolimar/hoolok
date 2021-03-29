@@ -4,7 +4,7 @@ package object hoolok {
 
   sealed trait Config
 
-  private[hoolok] case class HoolokConfig(
+  case class HoolokConfig(
                                            app: HoolokAppConfig,
                                            schemas: Option[List[HoolokSchemaConfig]],
                                            inputs: List[HoolokInputConfig],
@@ -12,14 +12,14 @@ package object hoolok {
                                            outputs: List[HoolokOutputConfig]
                                          ) extends Config
 
-  private[hoolok] case class HoolokAppConfig(
+  case class HoolokAppConfig(
                                               name: String,
                                               enableHiveSupport: Option[Boolean],
                                               sparkConf: Option[Map[String, String]],
                                               sparkContext: Option[HoolokSparkContextConfig]
                                             ) extends Config
 
-  private[hoolok] case class HoolokSparkContextConfig(
+  case class HoolokSparkContextConfig(
                                                        archive: Option[String],
                                                        description: Option[String],
                                                        file: Option[String],
@@ -28,14 +28,14 @@ package object hoolok {
                                                        checkpointDir: Option[String],
                                                      ) extends Config
 
-  private[hoolok] case class HoolokSchemaConfig(
+  case class HoolokSchemaConfig(
                                                  id: String,
                                                  kind: String,
                                                  format: String,
                                                  options: Option[Map[String, String]]
                                                ) extends Config
 
-  private[hoolok] case class HoolokInputConfig(
+  case class HoolokInputConfig(
                                                 id: String,
                                                 format: String,
                                                 kind: String,
@@ -47,13 +47,13 @@ package object hoolok {
                                                 options: Option[Map[String, String]]
                                               ) extends Config
 
-  private[hoolok] case class HoolokStepConfig(
+  case class HoolokStepConfig(
                                                id: String,
                                                kind: String,
                                                options: Option[Map[String, String]]
                                              ) extends Config
 
-  private[hoolok] case class HoolokOutputConfig(
+  case class HoolokOutputConfig(
                                                  id: String,
                                                  format: String,
                                                  mode: String,
@@ -68,13 +68,13 @@ package object hoolok {
                                                  trigger: Option[String]
                                                ) extends Config
 
-  private[hoolok] case class HoolokRepartitionConfig(
+  case class HoolokRepartitionConfig(
                                                       numPartitions: Option[Int],
                                                       partitionExprs: Option[List[String]]
                                                     ) extends Config
 
 
-  private[hoolok] case class HoolokWatermarkConfig(
+  case class HoolokWatermarkConfig(
                                                     eventTime: String,
                                                     delayThreshold: String
                                                   ) extends Config

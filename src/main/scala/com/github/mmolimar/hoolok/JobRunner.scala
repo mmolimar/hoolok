@@ -117,7 +117,7 @@ object JobRunner extends App with Logging {
       cause = err
     ))
 
-  val content = yaml.Printer(preserveOrder = true).pretty(config.asJson)
+  val content = yaml.Printer(preserveOrder = true, dropNullKeys = true).pretty(config.asJson)
 
   logInfo(s"Executing Hoolok Spark job with config: \n$content")
   val runner = new JobRunner(config)

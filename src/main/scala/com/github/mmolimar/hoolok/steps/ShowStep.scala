@@ -6,7 +6,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 @StepKind(kind = "show")
 class ShowStep(config: HoolokStepConfig)
-              (implicit spark: SparkSession) extends DataframeBasedStep(config)(spark) {
+              (implicit spark: SparkSession) extends DataframeBatchBasedStep(config)(spark) {
 
   val numRows: Int = config.options.flatMap(_.get("numRows")).getOrElse("20").toInt
   val truncate: Boolean = config.options.flatMap(_.get("truncate")).getOrElse("true").toBoolean

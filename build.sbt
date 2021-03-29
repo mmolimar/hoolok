@@ -15,6 +15,7 @@ libraryDependencies ++= {
   val circeVersion = "0.13.0"
   val circeYamlVersion = "0.13.1"
   val snakeYamlVersion = "1.28"
+  val jinjavaVersion = "2.5.6"
   val reflectionsVersion = "0.9.12"
   val sparKJsonSchemaVersion = "0.6.3"
   val deltaVersion = "0.8.0"
@@ -22,14 +23,16 @@ libraryDependencies ++= {
   Seq(
     "org.apache.spark" %% "spark-core" % sparkVersion % Compile,
     "org.apache.spark" %% "spark-sql" % sparkVersion % Compile,
+    "org.apache.spark" %% "spark-hive" % sparkVersion % Compile,
     "org.apache.spark" %% "spark-avro" % sparkVersion % Compile,
     "org.apache.spark" %% "spark-streaming" % sparkVersion % Compile,
     "org.apache.spark" %% "spark-hive" % sparkVersion % Compile,
 
     "io.circe" %% "circe-generic" % circeVersion,
     "io.circe" %% "circe-parser" % circeVersion,
-    "io.circe" %% "circe-yaml" % circeYamlVersion excludeAll ExclusionRule(organization = "org.yaml", name = "snakeyaml"),
+    "io.circe" %% "circe-yaml" % circeYamlVersion excludeAll ExclusionRule(organization = "org.yaml"),
     "org.yaml" % "snakeyaml" % snakeYamlVersion,
+    "com.hubspot.jinjava" % "jinjava" % jinjavaVersion,
     "org.reflections" % "reflections" % reflectionsVersion,
     "org.zalando" %% "spark-json-schema" % sparKJsonSchemaVersion,
     "io.delta" %% "delta-core" % deltaVersion,
