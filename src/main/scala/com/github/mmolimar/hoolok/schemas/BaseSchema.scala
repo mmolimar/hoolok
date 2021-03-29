@@ -13,6 +13,7 @@ abstract class BaseSchema(override val config: HoolokSchemaConfig)
                          (implicit spark: SparkSession) extends Schema with Logging {
 
   override final def register(): Unit = {
+    logInfo(s"Registering schema '${config.kind}' for ID '${config.id}'.")
     val schema: StructType = config.format.trim.toLowerCase match {
       case "spark-ddl" => StructType.fromDDL(schemaContent)
       case "json-schema" => SchemaConverter.convertContent(schemaContent)

@@ -26,13 +26,13 @@ private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
   def execute(): Unit = {
     val (schemas, inputs, steps, outputs) = validate(config)
 
-    logInfo("Registering schemas...")
+    if (schemas.nonEmpty) logInfo("Registering schemas...")
     schemas.foreach(_.register())
 
     logInfo("Reading inputs...")
     inputs.foreach(_.read())
 
-    logInfo("Processing steps...")
+    if (steps.nonEmpty) logInfo("Processing steps...")
     steps.foreach(_.process())
 
     logInfo("Writing outputs...")
@@ -59,7 +59,7 @@ private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
     logInfo("Validating schemas, inputs, steps and outputs config...")
     val schemas = config.schemas.getOrElse(List.empty).map(SchemaFactory(_))
     val inputs = config.inputs.map(InputFactory(_))
-    val steps = config.steps.map(StepFactory(_))
+    val steps = config.steps.getOrElse(List.empty).map(StepFactory(_))
     val outputs = config.outputs.map(OutputFactory(_))
 
     (schemas, inputs, steps, outputs)

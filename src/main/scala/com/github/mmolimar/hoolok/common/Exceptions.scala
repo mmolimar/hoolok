@@ -33,6 +33,11 @@ class InvalidStepConfigException(
                                   cause: Throwable = None.orNull
                                 ) extends HoolokException(ConfigStepError, Some(message), cause)
 
+class InvalidDataQualityConfigException(
+                                         message: String,
+                                         cause: Throwable = None.orNull
+                                       ) extends HoolokException(ConfigDataQualityError, Some(message), cause)
+
 class InvalidOutputConfigException(
                                     message: String,
                                     cause: Throwable = None.orNull
@@ -47,6 +52,11 @@ class SchemaReadException(
                            message: String,
                            cause: Throwable = None.orNull
                          ) extends HoolokException(SchemaReadError, Some(message), cause)
+
+class DataQualityValidationException(
+                                      message: String,
+                                      cause: Throwable = None.orNull
+                                    ) extends HoolokException(DataQualityValidationError, Some(message), cause)
 
 class StreamGracefulShutdownConfigException(
                                              message: String,
@@ -97,8 +107,13 @@ private[hoolok] object Errors {
     override val message: String = "The configuration for the step is incorrect"
   }
 
-  case object ConfigOutputError extends Errors {
+  case object ConfigDataQualityError extends Errors {
     override val code: Int = -105
+    override val message: String = "The configuration for data quality is incorrect"
+  }
+
+  case object ConfigOutputError extends Errors {
+    override val code: Int = -106
     override val message: String = "The configuration for the output is incorrect"
   }
 
@@ -112,13 +127,18 @@ private[hoolok] object Errors {
     override val message: String = "Error loading schema"
   }
 
-  case object StreamGracefulShutdownConfigError extends Errors {
+  case object DataQualityValidationError extends Errors {
     override val code: Int = -300
+    override val message: String = "The data quality rules have not been passed"
+  }
+
+  case object StreamGracefulShutdownConfigError extends Errors {
+    override val code: Int = -400
     override val message: String = "An error has occurred when configuring the graceful shutdown for a stream"
   }
 
   case object StreamGracefulShutdownStopError extends Errors {
-    override val code: Int = -301
+    override val code: Int = -401
     override val message: String = "The query stream has been stopped"
   }
 

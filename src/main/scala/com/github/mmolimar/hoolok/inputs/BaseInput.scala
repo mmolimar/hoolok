@@ -8,8 +8,8 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 abstract class BaseInput(override val config: HoolokInputConfig)
                         (implicit spark: SparkSession) extends Input with Logging {
 
-  def read(): Unit = {
-    logInfo(s"Reading input for ID '${config.id}' with format '${config.format}'.")
+  override final def read(): Unit = {
+    logInfo(s"Reading input ${config.kind} for ID '${config.id}' with format '${config.format}'.")
     val df = readInternal
       .possiblyWithCoalesce(config.coalesce)
       .possiblyWithRepartition(config.repartition)

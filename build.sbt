@@ -18,6 +18,8 @@ libraryDependencies ++= {
   val jinjavaVersion = "2.5.6"
   val reflectionsVersion = "0.9.12"
   val sparKJsonSchemaVersion = "0.6.3"
+  val deequVersion = "1.1.0_spark-3.0-scala-2.12"
+  val scalanlpVersion = "0.13.2"
   val deltaVersion = "0.8.0"
 
   Seq(
@@ -36,6 +38,11 @@ libraryDependencies ++= {
     "org.reflections" % "reflections" % reflectionsVersion,
     "org.zalando" %% "spark-json-schema" % sparKJsonSchemaVersion,
     "io.delta" %% "delta-core" % deltaVersion,
+    "com.amazon.deequ" % "deequ" % deequVersion excludeAll(
+      ExclusionRule(organization = "org.apache.spark"),
+      ExclusionRule(organization = "org.scalanlp")
+    ),
+    "org.scalanlp" %% "breeze" % scalanlpVersion,
 
     "org.scalatest" %% "scalatest-wordspec" % scalaTestVersion % Test,
     "org.scalatest" %% "scalatest-shouldmatchers" % scalaTestVersion % Test

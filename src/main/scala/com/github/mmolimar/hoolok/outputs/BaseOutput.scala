@@ -11,8 +11,8 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 abstract class BaseOutput(override val config: HoolokOutputConfig)
                          (implicit spark: SparkSession) extends Output with Logging {
 
-  final def write(): Unit = {
-    logInfo(s"Writing output for ID '${config.id}' with format '${config.format}'.'")
+  override final def write(): Unit = {
+    logInfo(s"Writing output ${config.kind} for ID '${config.id}' with format '${config.format}'.")
     val dataframe = spark.table(config.id)
       .possiblyWithCoalesce(config.coalesce)
       .possiblyWithRepartition(config.repartition)
@@ -22,7 +22,7 @@ abstract class BaseOutput(override val config: HoolokOutputConfig)
     writeInternal(dataframe)
   }
 
-  private def validate(dataFrame: DataFrame, schema: StructType): Unit = {
+  private def validate(dataframe: DataFrame, schema: StructType): Unit = {
     def validateFields(dfFields: Array[StructField], schemaFields: Array[StructField]): Boolean = {
       dfFields.forall { sf =>
         sf.dataType match {
@@ -37,7 +37,7 @@ abstract class BaseOutput(override val config: HoolokOutputConfig)
       }
     }
 
-    if (!validateFields(dataFrame.schema.fields, schema.fields)) {
+    if (!validateFields(dataframe.schema.fields, schema.fields)) {
       throw new SchemaValidationException(s"Dataframe with id '${config.id}' does not match " +
         s"with the schema '${config.schema.getOrElse("")}'.")
     }
@@ -45,6 +45,6 @@ abstract class BaseOutput(override val config: HoolokOutputConfig)
       s"against schema ID '${config.schema.getOrElse("")}'.")
   }
 
-  protected def writeInternal(dataFrame: DataFrame): Unit
+  protected def writeInternal(dataframe: DataFrame): Unit
 
 }
