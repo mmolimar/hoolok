@@ -18,7 +18,7 @@ abstract class BaseOutput(override val config: HoolokOutputConfig)
       .possiblyWithRepartition(config.repartition)
       .possiblyWithWatermark(config.watermark)
 
-    config.schema.foreach(schema => validate(dataframe, SchemaManager.getSchema(schema)))
+    config.schema.foreach(s => validate(dataframe, SchemaManager.getSchema(s)))
     writeInternal(dataframe)
   }
 
