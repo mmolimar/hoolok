@@ -17,7 +17,8 @@ libraryDependencies ++= {
   val snakeYamlVersion = "1.28"
   val jinjavaVersion = "2.5.6"
   val reflectionsVersion = "0.9.12"
-  val sparKJsonSchemaVersion = "0.6.3"
+  val sparkJsonSchemaVersion = "0.6.3"
+  val abrisVersion = "4.1.0"
   val deequVersion = "1.1.0_spark-3.0-scala-2.12"
   val scalanlpVersion = "0.13.2"
   val deltaVersion = "0.8.0"
@@ -28,6 +29,7 @@ libraryDependencies ++= {
     "org.apache.spark" %% "spark-hive" % sparkVersion % Compile,
     "org.apache.spark" %% "spark-avro" % sparkVersion % Compile,
     "org.apache.spark" %% "spark-streaming" % sparkVersion % Compile,
+    "org.apache.spark" %% "spark-sql-kafka-0-10" % sparkVersion % Compile,
     "org.apache.spark" %% "spark-hive" % sparkVersion % Compile,
 
     "io.circe" %% "circe-generic" % circeVersion,
@@ -36,7 +38,8 @@ libraryDependencies ++= {
     "org.yaml" % "snakeyaml" % snakeYamlVersion,
     "com.hubspot.jinjava" % "jinjava" % jinjavaVersion,
     "org.reflections" % "reflections" % reflectionsVersion,
-    "org.zalando" %% "spark-json-schema" % sparKJsonSchemaVersion,
+    "org.zalando" %% "spark-json-schema" % sparkJsonSchemaVersion,
+    "za.co.absa" %% "abris" % abrisVersion,
     "io.delta" %% "delta-core" % deltaVersion,
     "com.amazon.deequ" % "deequ" % deequVersion excludeAll(
       ExclusionRule(organization = "org.apache.spark"),
@@ -71,6 +74,11 @@ sourceGenerators in Compile += {
     Seq(file)
   }.taskValue
 }
+
+resolvers ++= Seq(
+  "Confluent Maven Repo" at "https://packages.confluent.io/maven/",
+  Resolver.mavenLocal
+)
 
 val hoolokMainClass = "com.github.mmolimar.hoolok.JobRunner"
 mainClass in(Compile, run) := Some(hoolokMainClass)
