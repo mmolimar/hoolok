@@ -2,14 +2,16 @@ package com.github.mmolimar.hoolok.outputs
 
 import com.github.mmolimar.hoolok.HoolokOutputConfig
 import com.github.mmolimar.hoolok.annotations.OutputBatchKind
+import com.github.mmolimar.hoolok.common.Implicits.DataframeEnricher
 import com.github.mmolimar.hoolok.common.InvalidOutputConfigException
 import org.apache.spark.sql.{DataFrame, DataFrameWriter, SparkSession}
 
 abstract class BatchBasedOutput(config: HoolokOutputConfig)
                                (implicit spark: SparkSession) extends BaseOutput(config)(spark) {
 
-  override def writeInternal(dataframe: DataFrame): Unit = save(
+  override final def writeInternal(dataframe: DataFrame): Unit = save(
     dataframe
+      .possiblyWithDataQuality(config.kind, config.id, config.dq)
       .write
       .mode(config.mode)
       .format(config.format)

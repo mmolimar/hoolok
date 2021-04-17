@@ -92,7 +92,7 @@ private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
 object JobRunner extends App with Logging {
 
   if (args.length != 1) {
-    throw new MissingConfigFileException(s"There are ${args.length} arguments. Expected 1 with " +
+    throw new MissingConfigFileException(s"There are '${args.length}' arguments. Expected 1 with " +
       "the config file path.")
   }
 

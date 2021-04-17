@@ -53,20 +53,20 @@ package object hoolok {
                                id: String,
                                kind: String,
                                options: Option[Map[String, String]],
-                               dq: Option[HoolokStepDataQualityConfig]
+                               dq: Option[HoolokDataQualityConfig]
                              ) extends Config
 
-  case class HoolokStepDataQualityConfig(
-                                          analysis: Option[HoolokStepDataQualityAnalysisConfig],
+  case class HoolokDataQualityConfig(
+                                          analysis: Option[HoolokDataQualityAnalysisConfig],
                                           verification: Option[HoolokStepDataQualityVerificationConfig]
                                         ) extends Config
 
-  case class HoolokStepDataQualityAnalysisConfig(
+  case class HoolokDataQualityAnalysisConfig(
                                                   name: String,
-                                                  analyzers: HoolokStepDataQualityAnalyzerConfig
+                                                  analyzers: HoolokDataQualityAnalyzerConfig
                                                 ) extends Config
 
-  case class HoolokStepDataQualityAnalyzerConfig(
+  case class HoolokDataQualityAnalyzerConfig(
                                                   compliance: Option[Compliance],
                                                   completeness: Option[Completeness],
                                                   distinctness: Option[Distinctness],
@@ -180,7 +180,8 @@ package object hoolok {
                                  watermark: Option[HoolokWatermarkConfig],
                                  options: Option[Map[String, String]],
                                  partitionBy: Option[List[String]],
-                                 trigger: Option[String]
+                                 trigger: Option[String],
+                                 dq: Option[HoolokDataQualityConfig]
                                ) extends Config
 
   case class HoolokRepartitionConfig(

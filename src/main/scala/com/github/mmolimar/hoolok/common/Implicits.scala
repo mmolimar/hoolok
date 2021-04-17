@@ -1,11 +1,12 @@
 package com.github.mmolimar.hoolok.common
 
+import com.github.mmolimar.hoolok.dq.DeequValidation
 import com.github.mmolimar.hoolok.schemas.SchemaManager
-import com.github.mmolimar.hoolok.{HoolokRepartitionConfig, HoolokWatermarkConfig}
+import com.github.mmolimar.hoolok.{HoolokDataQualityConfig, HoolokRepartitionConfig, HoolokWatermarkConfig}
 import org.apache.spark.sql.SparkSession.Builder
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.streaming.{DataStreamReader, DataStreamWriter, Trigger}
-import org.apache.spark.sql.{DataFrame, DataFrameReader, Dataset}
+import org.apache.spark.sql.{DataFrame, DataFrameReader, Dataset, SparkSession}
 
 object Implicits {
 
@@ -63,6 +64,15 @@ object Implicits {
       watermark.map(w => dataframe.withWatermark(w.eventTime, w.delayThreshold)).getOrElse(dataframe)
     }
 
+    def possiblyWithDataQuality(kind: String, id: String, dq: Option[HoolokDataQualityConfig])
+                               (implicit spark: SparkSession): DataFrame = {
+      dq.map(dq => {
+        val validation = new DeequValidation(dq)
+        validation.applyDataQuality(kind, id, dataframe)
+        dataframe
+      }).getOrElse(dataframe)
+    }
+
   }
 
   implicit class DataStreamWriterEnricher[T](dsw: DataStreamWriter[T]) {
@@ -82,6 +92,16 @@ object Implicits {
 
     def possiblyWithTrigger(trigger: Option[String]): DataStreamWriter[T] = {
       trigger.map(t => dsw.trigger(triggerType(t))).getOrElse(dsw)
+    }
+
+    def possiblyWithDataQuality(kind: String, id: String, dq: Option[HoolokDataQualityConfig])
+                               (implicit spark: SparkSession): DataStreamWriter[T] = {
+      dq.map(dq => {
+        val validation = new DeequValidation(dq)
+        dsw.foreachBatch { (batchDs: Dataset[T], batchId: Long) =>
+          validation.applyDataQuality(kind, s"$id-$batchId", batchDs.toDF())
+        }
+      }).getOrElse(dsw)
     }
 
     def possiblyWithCustomForeachBatch(function: Option[(Dataset[T], Long) => Unit]): DataStreamWriter[T] = {
