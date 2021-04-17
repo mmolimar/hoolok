@@ -24,7 +24,7 @@ abstract class StreamBasedOutput(config: HoolokOutputConfig)
     .flatMap(_.get("gracefulShutdownDelay").map(_.toInt))
     .getOrElse(defaultGracefulShutdownDelay)
 
-  def writeInternal(dataframe: DataFrame): Unit = {
+  override final def writeInternal(dataframe: DataFrame): Unit = {
     val query = save(
       dataframe
         .writeStream
@@ -33,17 +33,18 @@ abstract class StreamBasedOutput(config: HoolokOutputConfig)
         .options(config.options.getOrElse(Map.empty))
         .partitionBy(config.partitionBy.orNull: _*)
         .possiblyWithTrigger(config.trigger)
+        .possiblyWithDataQuality(config.kind, config.id, config.dq)
         .possiblyWithCustomForeachBatch(customForeachBatch)
     )
 
     gracefulShutdownPath.foreach(path => enableGracefulShutdown(query, path))
   }
 
-  def customForeachBatch[T]: Option[(Dataset[T], Long) => Unit] = None
+  protected def customForeachBatch[T]: Option[(Dataset[T], Long) => Unit] = None
 
   def save[T](dfw: DataStreamWriter[T]): StreamingQuery
 
-  private def enableGracefulShutdown(query: StreamingQuery, path: String): Unit = {
+  protected def enableGracefulShutdown(query: StreamingQuery, path: String): Unit = {
     val fileName: String = {
       val dateFormat = DateTimeFormatter.ofPattern("YYYYMMdd_HHmmss").format(java.time.LocalDateTime.now)
       s"hoolok_${spark.sparkContext.appName}_${config.id}_${dateFormat}_${UUID.randomUUID()}.stream"
@@ -70,7 +71,7 @@ abstract class StreamBasedOutput(config: HoolokOutputConfig)
 
   }
 
-  def gracefulShutdown(query: StreamingQuery, fs: FileSystem, marker: Path): Runnable = new Runnable {
+  protected def gracefulShutdown(query: StreamingQuery, fs: FileSystem, marker: Path): Runnable = new Runnable {
 
     def markerExists: Boolean = fs.exists(marker)
 

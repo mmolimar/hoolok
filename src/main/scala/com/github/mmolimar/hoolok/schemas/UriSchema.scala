@@ -16,7 +16,8 @@ class UriSchema(config: HoolokSchemaConfig)
                (implicit spark: SparkSession) extends BaseSchema(config)(spark) {
 
   val schemaPath: Path = config.options.flatMap(_.get("path").map(new Path(_))).getOrElse {
-    throw new InvalidSchemaConfigException("URI schema is not configured properly. The option 'path' is expected.")
+    throw new InvalidSchemaConfigException(s"Schema '${config.kind}' is not configured properly. " +
+      "The option 'path' is expected.")
   }
 
   override def schemaContent: String = {
@@ -34,11 +35,11 @@ class UriSchema(config: HoolokSchemaConfig)
       case Success(Some(is)) =>
         closer(is)(is => Source.fromInputStream(is).mkString)
       case Success(None) =>
-        throw new SchemaReadException(s"Schema in path '$schemaPath' for schema ID '${config.id}' cannot " +
-          "be read or does not exist.")
+        throw new SchemaReadException(s"Schema '${config.kind}' in path '$schemaPath' for schema ID '${config.id}' " +
+          "cannot be read or does not exist.")
       case Failure(e) =>
-        throw new SchemaReadException(s"Schema in path '$schemaPath' for schema ID '${config.id}' cannot " +
-          "be read or does not exist.", e)
+        throw new SchemaReadException(s"Schema '${config.kind}' in path '$schemaPath' for schema ID '${config.id}' " +
+          "cannot be read or does not exist.", e)
     }
   }
 

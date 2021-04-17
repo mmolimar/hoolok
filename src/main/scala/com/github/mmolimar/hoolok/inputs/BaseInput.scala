@@ -9,7 +9,7 @@ abstract class BaseInput(override val config: HoolokInputConfig)
                         (implicit spark: SparkSession) extends Input with Logging {
 
   override final def read(): Unit = {
-    logInfo(s"Reading input ${config.kind} for ID '${config.id}' with format '${config.format}'.")
+    logInfo(s"Reading input '${config.kind}' for ID '${config.id}' with format '${config.format}'.")
     val df = readInternal
       .possiblyWithCoalesce(config.coalesce)
       .possiblyWithRepartition(config.repartition)

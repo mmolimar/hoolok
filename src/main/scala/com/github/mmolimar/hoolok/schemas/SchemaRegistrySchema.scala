@@ -16,7 +16,7 @@ class SchemaRegistrySchema(config: HoolokSchemaConfig)
   private val mapCapacity = 10
 
   val baseUrls: Seq[String] = config.options.flatMap(_.get("schemaRegistryUrls")).getOrElse {
-    throw new InvalidSchemaConfigException(s"'${getClass.getSimpleName}' schema is not configured properly " +
+    throw new InvalidSchemaConfigException(s"Schema '${config.kind}' is not configured properly " +
       "for retrieving schemas from Schema Registry. The option 'schemaRegistryUrls' is expected.")
   }.split(",")
   val schemaRegistry = new CachedSchemaRegistryClient(seqAsJavaList(baseUrls), mapCapacity)
@@ -24,7 +24,7 @@ class SchemaRegistrySchema(config: HoolokSchemaConfig)
   val schemaSubject: Option[String] = config.options.flatMap(_.get("subject"))
   val schemaId: Option[Int] = config.options.flatMap(_.get("id").map(_.toInt))
   if (schemaSubject.isEmpty && schemaId.isEmpty) {
-    throw new InvalidSchemaConfigException("SchemaRegistry schema is not configured " +
+    throw new InvalidSchemaConfigException(s"Schema '${config.kind}' is not configured " +
       "properly for retrieving schemas. The options 'id' and/or 'subject' are expected.")
   }
 
@@ -32,23 +32,23 @@ class SchemaRegistrySchema(config: HoolokSchemaConfig)
     Try {
       (schemaSubject, schemaId) match {
         case (Some(subject), Some(id)) =>
-          logInfo(s"Retrieving schema from SchemaRegistry with id '$id' and subject '$subject'.")
+          logInfo(s"Retrieving schema '${config.kind}' with id '$id' and subject '$subject'.")
           Option(schemaRegistry.getBySubjectAndId(subject, id))
         case (None, Some(id)) =>
-          logInfo(s"Retrieving schema from SchemaRegistry with id '$id'.")
+          logInfo(s"Retrieving schema '${config.kind}' with id '$id'.")
           Option(schemaRegistry.getById(id))
         case (Some(subject), None) =>
-          logInfo(s"Retrieving latest schema from SchemaRegistry with subject '$subject'.")
+          logInfo(s"Retrieving latest schema '${config.kind}' with subject '$subject'.")
           val id = schemaRegistry.getLatestSchemaMetadata(subject).getId
           Option(schemaRegistry.getBySubjectAndId(subject, id))
       }
     } match {
       case Success(Some(schema)) => schema.toString
       case Success(None) =>
-        throw new SchemaReadException(s"Schema kind '${config.kind}' for ID '${config.id}' cannot " +
+        throw new SchemaReadException(s"Schema '${config.kind}' for ID '${config.id}' cannot " +
           "be read or does not exist.")
       case Failure(e) =>
-        throw new SchemaReadException(s"Schema kind '${config.kind}' for ID '${config.id}' cannot " +
+        throw new SchemaReadException(s"Schema '${config.kind}' for ID '${config.id}' cannot " +
           "be read or does not exist.", e)
     }
   }

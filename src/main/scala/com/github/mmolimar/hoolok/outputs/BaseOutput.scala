@@ -12,7 +12,7 @@ abstract class BaseOutput(override val config: HoolokOutputConfig)
                          (implicit spark: SparkSession) extends Output with Logging {
 
   override final def write(): Unit = {
-    logInfo(s"Writing output ${config.kind} for ID '${config.id}' with format '${config.format}'.")
+    logInfo(s"Writing output '${config.kind}' for ID '${config.id}' with format '${config.format}'.")
     val dataframe = spark.table(config.id)
       .possiblyWithCoalesce(config.coalesce)
       .possiblyWithRepartition(config.repartition)

@@ -10,7 +10,8 @@ class InlineSchema(config: HoolokSchemaConfig)
                   (implicit spark: SparkSession) extends BaseSchema(config)(spark) {
 
   val content: String = config.options.flatMap(_.get("value")).getOrElse {
-    throw new InvalidSchemaConfigException("Inline schema is not configured properly. The option 'value' is expected.")
+    throw new InvalidSchemaConfigException(s"Schema '${config.kind}' is not configured properly. The option " +
+      "'value' is expected.")
   }
 
   override def schemaContent: String = content
