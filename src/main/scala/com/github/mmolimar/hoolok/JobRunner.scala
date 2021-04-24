@@ -54,7 +54,7 @@ private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
 
   private[hoolok] def validate(config: HoolokConfig): (List[Schema], List[Input], List[Step], List[Output]) = {
     if (config.inputs.isEmpty || config.outputs.isEmpty) {
-      throw new MissingConfigFileException("The YAML config file must have, at least one input and one output.")
+      throw new InvalidYamlFileException("The YAML config file must have, at least one input and one output.")
     }
     logInfo("Validating schemas, inputs, steps and outputs config...")
     val schemas = config.schemas.getOrElse(List.empty).map(SchemaFactory(_))
@@ -91,12 +91,14 @@ private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
 
 object JobRunner extends App with Logging {
 
-  if (args.length != 1) {
-    throw new MissingConfigFileException(s"There are '${args.length}' arguments. Expected 1 with " +
-      "the config file path.")
+  def validateArgs(args: Array[String]): Unit = {
+    if (args.length != 1) {
+      throw new MissingConfigFileException(s"There are '${args.length}' arguments. Expected 1 with " +
+        "the config file path.")
+    }
   }
 
-  logInfo(
+  def banner(): String = {
     """
       |______  __           ______     ______
       |___  / / /______________  /________  /__
@@ -106,33 +108,46 @@ object JobRunner extends App with Logging {
       |________________________________________
       |
       |"""
-      .stripMargin.format(BuildInfo.version))
+      .stripMargin.format(BuildInfo.version)
+  }
+
+  def parseConfigFile(path: String): HoolokConfig = {
+    hparser.parse(new FileReader(path))
+      .leftMap(err => err: Error)
+      .flatMap(_.as[HoolokConfig])
+      .valueOr(err => throw new InvalidYamlFileException(
+        message = s"Cannot parse YAML file. ${err.getMessage}",
+        cause = err
+      ))
+  }
+
+  def executeJob(config: HoolokConfig): Int = {
+    val runner = new JobRunner(config)
+    val exitCode = Try {
+      runner.execute()
+    } match {
+      case Failure(he: HoolokException) =>
+        logError(he.getMessage, he)
+        he.error.code
+      case Failure(t: Throwable) =>
+        logError(s"Unexpected error: ${t.getMessage}", t)
+        UnknownHoolokError.code
+      case Success(_) => HoolokSuccess.code
+    }
+    runner.stop()
+
+    exitCode
+  }
+
+  validateArgs(args)
+
+  logInfo(banner())
 
   logInfo(s"Parsing Hoolok YAML file located at: '${args.head}'")
-  private val config = hparser.parse(new FileReader(args.head))
-    .leftMap(err => err: Error)
-    .flatMap(_.as[HoolokConfig])
-    .valueOr(err => throw new InvalidYamlFileException(
-      message = s"Cannot parse YAML file. ${err.getMessage}",
-      cause = err
-    ))
+  private val config = parseConfigFile(args.head)
 
-  val content = yaml.Printer(preserveOrder = true, dropNullKeys = true).pretty(config.asJson)
-
+  private val content = yaml.Printer(preserveOrder = true, dropNullKeys = true).pretty(config.asJson)
   logInfo(s"Executing Hoolok Spark job with config: \n$content")
-  val runner = new JobRunner(config)
-  val exitCode = Try {
-    runner.execute()
-  } match {
-    case Failure(he: HoolokException) =>
-      logError(he.getMessage, he)
-      he.error.code
-    case Failure(t: Throwable) =>
-      logError(s"Unexpected error: ${t.getMessage}", t)
-      UnknownHoolokError.code
-    case Success(_) => HoolokSuccess.code
-  }
-  runner.stop()
+  sys.exit(executeJob(config))
 
-  sys.exit(exitCode)
 }

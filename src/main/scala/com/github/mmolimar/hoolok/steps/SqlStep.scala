@@ -3,12 +3,15 @@ package com.github.mmolimar.hoolok.steps
 import com.github.mmolimar.hoolok.HoolokStepConfig
 import com.github.mmolimar.hoolok.annotations.StepKind
 import com.github.mmolimar.hoolok.common.InvalidStepConfigException
+import com.hubspot.jinjava.lib.fn.ELFunctionDefinition
+import com.hubspot.jinjava.{Jinjava, JinjavaConfig}
+import org.apache.spark.sql.catalyst.util.{DateTimeConstants => SparkDateTimeConstants}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import java.time._
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.util.Calendar
+import java.util.{Calendar, Collections}
 import java.util.concurrent.TimeUnit
 
 @StepKind(kind = "sql")
@@ -25,12 +28,6 @@ class SqlStep(config: HoolokStepConfig)
   }
 
 }
-
-import com.hubspot.jinjava.lib.fn.ELFunctionDefinition
-import com.hubspot.jinjava.{Jinjava, JinjavaConfig}
-import org.apache.spark.sql.catalyst.util.{DateTimeConstants => SparkDateTimeConstants}
-
-import java.util.Collections
 
 private[steps] object SqlStep {
 
@@ -65,7 +62,6 @@ private[steps] object SqlStep {
         ns, "current_hour_of_day", classOf[macros], "currentHourOfDay"),
       new ELFunctionDefinition(
         ns, "current_minute", classOf[macros], "currentMinute"),
-
       new ELFunctionDefinition(
         ns, "previous_year", classOf[macros], "previousYear"),
       new ELFunctionDefinition(
@@ -82,7 +78,6 @@ private[steps] object SqlStep {
         ns, "previous_hour_of_day", classOf[macros], "previousHourOfDay"),
       new ELFunctionDefinition(
         ns, "previous_minute", classOf[macros], "previousMinute"),
-
       new ELFunctionDefinition(ns, "date_add_days", classOf[macros],
         "dateAddDays", classOf[String], classOf[String], classOf[String], classOf[Int]),
       new ELFunctionDefinition(ns, "date_add_weeks", classOf[macros],

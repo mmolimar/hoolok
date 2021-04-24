@@ -22,7 +22,7 @@ object SchemaManager {
     _schemas += (name -> schema)
   }
 
-  def getSchema(name: String): StructType = _schemas(name)
+  def getSchema(name: String): Option[StructType] = _schemas.get(name)
 
 }
 

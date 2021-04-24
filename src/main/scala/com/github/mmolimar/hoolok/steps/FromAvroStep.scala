@@ -29,6 +29,7 @@ class FromAvroStep(config: HoolokStepConfig)
     throw new InvalidStepConfigException("FromAvro step is not configured properly. " +
       "The option 'columns' and 'alias' must have the same length.")
   }
+
   val schema: String = config.options.flatMap(_.get("schema")).getOrElse {
     throw new InvalidStepConfigException("FromAvro step is not configured properly. The option 'schema' is expected.")
   }
@@ -36,7 +37,9 @@ class FromAvroStep(config: HoolokStepConfig)
     .flatMap(_.get("select").map(_.split(",").map(cn => new ColumnName(cn.trim))))
 
   def processInternal(): DataFrame = {
-    val avroSchema = SchemaConverters.toAvroType(SchemaManager.getSchema(schema)).toString
+    val avroSchema = SchemaConverters.toAvroType(SchemaManager.getSchema(schema).getOrElse(
+      throw new InvalidStepConfigException(s"Schema '$schema' does not exist.")
+    )).toString
     val selection = new ColumnName("*") +: columns.zipWithIndex.map {
       case (col, index) => from_avro(col, avroSchema).as(alias(index))
     }

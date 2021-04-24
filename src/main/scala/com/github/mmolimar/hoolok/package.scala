@@ -2,39 +2,40 @@ package com.github.mmolimar
 
 import com.amazon.deequ.analyzers._
 
+// scalastyle:off
 package object hoolok {
 
   sealed trait Config
 
   case class HoolokConfig(
                            app: HoolokAppConfig,
-                           schemas: Option[List[HoolokSchemaConfig]],
+                           schemas: Option[List[HoolokSchemaConfig]] = None,
                            inputs: List[HoolokInputConfig],
-                           steps: Option[List[HoolokStepConfig]],
+                           steps: Option[List[HoolokStepConfig]] = None,
                            outputs: List[HoolokOutputConfig]
                          ) extends Config
 
   case class HoolokAppConfig(
                               name: String,
-                              enableHiveSupport: Option[Boolean],
-                              sparkConf: Option[Map[String, String]],
-                              sparkContext: Option[HoolokSparkContextConfig]
+                              enableHiveSupport: Option[Boolean] = None,
+                              sparkConf: Option[Map[String, String]] = None,
+                              sparkContext: Option[HoolokSparkContextConfig] = None
                             ) extends Config
 
   case class HoolokSparkContextConfig(
-                                       archive: Option[String],
-                                       description: Option[String],
-                                       file: Option[String],
-                                       jar: Option[String],
-                                       hadoopConfiguration: Option[Map[String, String]],
-                                       checkpointDir: Option[String],
+                                       archive: Option[String] = None,
+                                       description: Option[String] = None,
+                                       file: Option[String] = None,
+                                       jar: Option[String] = None,
+                                       hadoopConfiguration: Option[Map[String, String]] = None,
+                                       checkpointDir: Option[String] = None
                                      ) extends Config
 
   case class HoolokSchemaConfig(
                                  id: String,
                                  kind: String,
                                  format: String,
-                                 options: Option[Map[String, String]]
+                                 options: Option[Map[String, String]] = None
                                ) extends Config
 
   case class HoolokInputConfig(
@@ -42,131 +43,131 @@ package object hoolok {
                                 format: String,
                                 kind: String,
                                 subtype: String,
-                                schema: Option[String],
-                                coalesce: Option[Int],
-                                repartition: Option[HoolokRepartitionConfig],
-                                watermark: Option[HoolokWatermarkConfig],
-                                options: Option[Map[String, String]]
+                                schema: Option[String] = None,
+                                coalesce: Option[Int] = None,
+                                repartition: Option[HoolokRepartitionConfig] = None,
+                                watermark: Option[HoolokWatermarkConfig] = None,
+                                options: Option[Map[String, String]] = None
                               ) extends Config
 
   case class HoolokStepConfig(
                                id: String,
                                kind: String,
-                               options: Option[Map[String, String]],
-                               dq: Option[HoolokDataQualityConfig]
+                               options: Option[Map[String, String]] = None,
+                               dq: Option[HoolokDataQualityConfig] = None
                              ) extends Config
 
   case class HoolokDataQualityConfig(
-                                          analysis: Option[HoolokDataQualityAnalysisConfig],
-                                          verification: Option[HoolokStepDataQualityVerificationConfig]
-                                        ) extends Config
+                                      analysis: Option[HoolokDataQualityAnalysisConfig] = None,
+                                      verification: Option[HoolokDataQualityVerificationConfig] = None
+                                    ) extends Config
 
   case class HoolokDataQualityAnalysisConfig(
-                                                  name: String,
-                                                  analyzers: HoolokDataQualityAnalyzerConfig
-                                                ) extends Config
+                                              name: String,
+                                              analyzers: HoolokDataQualityAnalyzerConfig
+                                            ) extends Config
 
   case class HoolokDataQualityAnalyzerConfig(
-                                                  compliance: Option[Compliance],
-                                                  completeness: Option[Completeness],
-                                                  distinctness: Option[Distinctness],
-                                                  uniqueness: Option[Uniqueness],
-                                                  uniqueValueRatio: Option[UniqueValueRatio],
-                                                  countDistinct: Option[CountDistinct],
-                                                  entropy: Option[Entropy],
-                                                  mutualInformation: Option[MutualInformation],
-                                                  maximum: Option[Maximum],
-                                                  minimum: Option[Minimum],
-                                                  maxLength: Option[MaxLength],
-                                                  minLength: Option[MinLength],
-                                                  mean: Option[Mean],
-                                                  sum: Option[Sum],
-                                                  size: Option[Size],
-                                                  dataType: Option[DataType]
-                                                )
+                                              compliance: Option[Compliance] = None,
+                                              completeness: Option[Completeness] = None,
+                                              distinctness: Option[Distinctness] = None,
+                                              uniqueness: Option[Uniqueness] = None,
+                                              uniqueValueRatio: Option[UniqueValueRatio] = None,
+                                              countDistinct: Option[CountDistinct] = None,
+                                              entropy: Option[Entropy] = None,
+                                              mutualInformation: Option[MutualInformation] = None,
+                                              maximum: Option[Maximum] = None,
+                                              minimum: Option[Minimum] = None,
+                                              maxLength: Option[MaxLength] = None,
+                                              minLength: Option[MinLength] = None,
+                                              mean: Option[Mean] = None,
+                                              sum: Option[Sum] = None,
+                                              size: Option[Size] = None,
+                                              dataType: Option[DataType] = None
+                                            )
 
-  case class HoolokStepDataQualityVerificationConfig(
-                                                      name: String,
-                                                      checks: List[HoolokStepDataQualityCheckConfig]
-                                                    ) extends Config
+  case class HoolokDataQualityVerificationConfig(
+                                                  name: String,
+                                                  checks: List[HoolokDataQualityCheckConfig]
+                                                ) extends Config
 
-  case class HoolokStepDataQualityCheckConfig(
-                                               level: String,
-                                               description: String,
-                                               isComplete: Option[HoolokStepDataQualityCheckIsCompleteConfig],
-                                               isUnique: Option[HoolokStepDataQualityCheckIsUniqueConfig],
-                                               hasSize: Option[HoolokStepDataQualityCheckHasSizeConfig],
-                                               isContainedIn: Option[HoolokStepDataQualityCheckIsContainedInConfig],
-                                               isNonNegative: Option[HoolokStepDataQualityCheckIsNonNegativeConfig],
-                                               isPositive: Option[HoolokStepDataQualityCheckIsPositiveConfig],
-                                               isLessThan: Option[HoolokStepDataQualityCheckIsLessThanConfig],
-                                               isLessThanOrEqualTo: Option[HoolokStepDataQualityCheckIsLessThanOrEqualConfig],
-                                               isGreaterThan: Option[HoolokStepDataQualityCheckIsGreaterThanConfig],
-                                               isGreaterThanOrEqualTo: Option[HoolokStepDataQualityCheckIsGreaterThanOrEqualConfig],
-                                               hasPattern: Option[HoolokStepDataQualityCheckHasPatternConfig],
-                                               containsURL: Option[HoolokStepDataQualityCheckContainsUrlConfig],
-                                               containsEmail: Option[HoolokStepDataQualityCheckContainsEmailConfig],
-                                             ) extends Config
+  case class HoolokDataQualityCheckConfig(
+                                           level: String,
+                                           description: String,
+                                           isComplete: Option[HoolokDataQualityCheckIsCompleteConfig] = None,
+                                           isUnique: Option[HoolokDataQualityCheckIsUniqueConfig] = None,
+                                           hasSize: Option[HoolokDataQualityCheckHasSizeConfig] = None,
+                                           isContainedIn: Option[HoolokDataQualityCheckIsContainedInConfig] = None,
+                                           isNonNegative: Option[HoolokDataQualityCheckIsNonNegativeConfig] = None,
+                                           isPositive: Option[HoolokDataQualityCheckIsPositiveConfig] = None,
+                                           isLessThan: Option[HoolokDataQualityCheckIsLessThanConfig] = None,
+                                           isLessThanOrEqualTo: Option[HoolokDataQualityCheckIsLessThanOrEqualConfig] = None,
+                                           isGreaterThan: Option[HoolokDataQualityCheckIsGreaterThanConfig] = None,
+                                           isGreaterThanOrEqualTo: Option[HoolokDataQualityCheckIsGreaterThanOrEqualConfig] = None,
+                                           hasPattern: Option[HoolokDataQualityCheckHasPatternConfig] = None,
+                                           containsURL: Option[HoolokDataQualityCheckContainsUrlConfig] = None,
+                                           containsEmail: Option[HoolokDataQualityCheckContainsEmailConfig] = None
+                                         ) extends Config
 
 
-  case class HoolokStepDataQualityCheckIsCompleteConfig(
-                                                         column: String
-                                                       ) extends Config
+  case class HoolokDataQualityCheckIsCompleteConfig(
+                                                     column: String
+                                                   ) extends Config
 
-  case class HoolokStepDataQualityCheckIsUniqueConfig(
-                                                       column: String
-                                                     ) extends Config
+  case class HoolokDataQualityCheckIsUniqueConfig(
+                                                   column: String
+                                                 ) extends Config
 
-  case class HoolokStepDataQualityCheckHasSizeConfig(
-                                                      op: String,
-                                                      value: Long
-                                                    ) extends Config
+  case class HoolokDataQualityCheckHasSizeConfig(
+                                                  op: String,
+                                                  value: Long
+                                                ) extends Config
 
-  case class HoolokStepDataQualityCheckIsContainedInConfig(
-                                                            column: String,
-                                                            allowedValues: List[String]
-                                                          ) extends Config
+  case class HoolokDataQualityCheckIsContainedInConfig(
+                                                        column: String,
+                                                        allowedValues: List[String]
+                                                      ) extends Config
 
-  case class HoolokStepDataQualityCheckIsNonNegativeConfig(
-                                                            column: String
-                                                          ) extends Config
+  case class HoolokDataQualityCheckIsNonNegativeConfig(
+                                                        column: String
+                                                      ) extends Config
 
-  case class HoolokStepDataQualityCheckIsPositiveConfig(
-                                                         column: String
-                                                       ) extends Config
+  case class HoolokDataQualityCheckIsPositiveConfig(
+                                                     column: String
+                                                   ) extends Config
 
-  case class HoolokStepDataQualityCheckIsLessThanConfig(
-                                                         columnA: String,
-                                                         columnB: String,
-                                                       ) extends Config
+  case class HoolokDataQualityCheckIsLessThanConfig(
+                                                     columnA: String,
+                                                     columnB: String
+                                                   ) extends Config
 
-  case class HoolokStepDataQualityCheckIsLessThanOrEqualConfig(
-                                                                columnA: String,
-                                                                columnB: String,
-                                                              ) extends Config
-
-  case class HoolokStepDataQualityCheckIsGreaterThanConfig(
+  case class HoolokDataQualityCheckIsLessThanOrEqualConfig(
                                                             columnA: String,
-                                                            columnB: String,
+                                                            columnB: String
                                                           ) extends Config
 
-  case class HoolokStepDataQualityCheckIsGreaterThanOrEqualConfig(
-                                                                   columnA: String,
-                                                                   columnB: String,
-                                                                 ) extends Config
+  case class HoolokDataQualityCheckIsGreaterThanConfig(
+                                                        columnA: String,
+                                                        columnB: String
+                                                      ) extends Config
 
-  case class HoolokStepDataQualityCheckHasPatternConfig(
-                                                         column: String,
-                                                         pattern: String
-                                                       ) extends Config
+  case class HoolokDataQualityCheckIsGreaterThanOrEqualConfig(
+                                                               columnA: String,
+                                                               columnB: String
+                                                             ) extends Config
 
-  case class HoolokStepDataQualityCheckContainsUrlConfig(
-                                                          column: String
-                                                        ) extends Config
+  case class HoolokDataQualityCheckHasPatternConfig(
+                                                     column: String,
+                                                     pattern: String
+                                                   ) extends Config
 
-  case class HoolokStepDataQualityCheckContainsEmailConfig(
-                                                            column: String
-                                                          ) extends Config
+  case class HoolokDataQualityCheckContainsUrlConfig(
+                                                      column: String
+                                                    ) extends Config
+
+  case class HoolokDataQualityCheckContainsEmailConfig(
+                                                        column: String
+                                                      ) extends Config
 
   case class HoolokOutputConfig(
                                  id: String,
@@ -174,19 +175,19 @@ package object hoolok {
                                  mode: String,
                                  kind: String,
                                  subtype: String,
-                                 schema: Option[String],
-                                 coalesce: Option[Int],
-                                 repartition: Option[HoolokRepartitionConfig],
-                                 watermark: Option[HoolokWatermarkConfig],
-                                 options: Option[Map[String, String]],
-                                 partitionBy: Option[List[String]],
-                                 trigger: Option[String],
-                                 dq: Option[HoolokDataQualityConfig]
+                                 schema: Option[String] = None,
+                                 coalesce: Option[Int] = None,
+                                 repartition: Option[HoolokRepartitionConfig] = None,
+                                 watermark: Option[HoolokWatermarkConfig] = None,
+                                 options: Option[Map[String, String]] = None,
+                                 partitionBy: Option[List[String]] = None,
+                                 trigger: Option[String] = None,
+                                 dq: Option[HoolokDataQualityConfig] = None
                                ) extends Config
 
   case class HoolokRepartitionConfig(
-                                      numPartitions: Option[Int],
-                                      partitionExprs: Option[List[String]]
+                                      numPartitions: Option[Int] = None,
+                                      partitionExprs: Option[List[String]] = None
                                     ) extends Config
 
 

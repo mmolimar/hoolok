@@ -2,7 +2,7 @@ package com.github.mmolimar.hoolok.outputs
 
 import com.github.mmolimar.hoolok.HoolokOutputConfig
 import com.github.mmolimar.hoolok.common.Implicits.DataframeEnricher
-import com.github.mmolimar.hoolok.common.SchemaValidationException
+import com.github.mmolimar.hoolok.common.{InvalidOutputConfigException, SchemaValidationException}
 import com.github.mmolimar.hoolok.schemas.SchemaManager
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.types.{ArrayType, StructField, StructType}
@@ -18,7 +18,9 @@ abstract class BaseOutput(override val config: HoolokOutputConfig)
       .possiblyWithRepartition(config.repartition)
       .possiblyWithWatermark(config.watermark)
 
-    config.schema.foreach(s => validate(dataframe, SchemaManager.getSchema(s)))
+    config.schema.foreach(s => validate(dataframe, SchemaManager.getSchema(s).getOrElse(
+      throw new InvalidOutputConfigException(s"Schema '$s' does not exist.")
+    )))
     writeInternal(dataframe)
   }
 

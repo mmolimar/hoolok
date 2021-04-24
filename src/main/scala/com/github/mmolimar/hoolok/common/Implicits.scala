@@ -29,7 +29,11 @@ object Implicits {
   implicit class DataFrameReaderWithSchema(reader: DataFrameReader) {
 
     def possiblyWithSchema(schema: Option[String]): DataFrameReader = {
-      schema.map(s => reader.schema(SchemaManager.getSchema(s))).getOrElse(reader)
+      schema.map { s =>
+        reader.schema(SchemaManager.getSchema(s).getOrElse(
+          throw new InvalidInputConfigException(s"Schema '$s' does not exist.")
+        ))
+      }.getOrElse(reader)
     }
 
   }
@@ -37,7 +41,11 @@ object Implicits {
   implicit class DataStreamReaderWithSchema(reader: DataStreamReader) {
 
     def possiblyWithSchema(schema: Option[String]): DataStreamReader = {
-      schema.map(s => reader.schema(SchemaManager.getSchema(s))).getOrElse(reader)
+      schema.map { s =>
+        reader.schema(SchemaManager.getSchema(s).getOrElse(
+          throw new InvalidInputConfigException(s"Schema '$s' does not exist.")
+        ))
+      }.getOrElse(reader)
     }
 
   }

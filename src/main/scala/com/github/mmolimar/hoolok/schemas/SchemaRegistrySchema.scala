@@ -28,29 +28,29 @@ class SchemaRegistrySchema(config: HoolokSchemaConfig)
       "properly for retrieving schemas. The options 'id' and/or 'subject' are expected.")
   }
 
-  override def schemaContent: String = {
-    Try {
-      (schemaSubject, schemaId) match {
-        case (Some(subject), Some(id)) =>
-          logInfo(s"Retrieving schema '${config.kind}' with id '$id' and subject '$subject'.")
-          Option(schemaRegistry.getBySubjectAndId(subject, id))
-        case (None, Some(id)) =>
-          logInfo(s"Retrieving schema '${config.kind}' with id '$id'.")
-          Option(schemaRegistry.getById(id))
-        case (Some(subject), None) =>
-          logInfo(s"Retrieving latest schema '${config.kind}' with subject '$subject'.")
-          val id = schemaRegistry.getLatestSchemaMetadata(subject).getId
-          Option(schemaRegistry.getBySubjectAndId(subject, id))
-      }
-    } match {
-      case Success(Some(schema)) => schema.toString
-      case Success(None) =>
-        throw new SchemaReadException(s"Schema '${config.kind}' for ID '${config.id}' cannot " +
-          "be read or does not exist.")
-      case Failure(e) =>
-        throw new SchemaReadException(s"Schema '${config.kind}' for ID '${config.id}' cannot " +
-          "be read or does not exist.", e)
+  override def schemaContent: String = Try {
+    (schemaSubject, schemaId) match {
+      case (Some(subject), Some(id)) =>
+        logInfo(s"Retrieving schema '${config.kind}' with id '$id' and subject '$subject'.")
+        Option(schemaRegistry.getBySubjectAndId(subject, id))
+      case (None, Some(id)) =>
+        logInfo(s"Retrieving schema '${config.kind}' with id '$id'.")
+        Option(schemaRegistry.getById(id))
+      case (Some(subject), None) =>
+        logInfo(s"Retrieving latest schema '${config.kind}' with subject '$subject'.")
+        val id = schemaRegistry.getLatestSchemaMetadata(subject).getId
+        Option(schemaRegistry.getBySubjectAndId(subject, id))
+      case _ => throw new InvalidSchemaConfigException(s"Schema '${config.kind}' is not configured " +
+        "properly for retrieving schemas. The options 'id' and/or 'subject' are expected.")
     }
+  } match {
+    case Success(Some(schema)) => schema.toString
+    case Success(None) =>
+      throw new SchemaReadException(s"Schema '${config.kind}' for ID '${config.id}' cannot " +
+        "be read or does not exist.")
+    case Failure(e) =>
+      throw new SchemaReadException(s"Schema '${config.kind}' for ID '${config.id}' cannot " +
+        "be read or does not exist.", e)
   }
 
 }

@@ -1,7 +1,7 @@
 package com.github.mmolimar.hoolok.dq
 
-import com.amazon.deequ.analyzers.Analyzer
 import com.amazon.deequ.analyzers.runners.{AnalysisRunner, AnalyzerContext}
+import com.amazon.deequ.analyzers.{Analyzer, State}
 import com.amazon.deequ.checks.{Check, CheckLevel, CheckStatus}
 import com.amazon.deequ.metrics.Metric
 import com.amazon.deequ.{VerificationResult, VerificationSuite}
@@ -73,10 +73,14 @@ class DeequValidation(config: HoolokDataQualityConfig)
       }.mkString
   }
 
-  protected def analyze(analyzersConfig: HoolokDataQualityAnalyzerConfig, dataframe: DataFrame): AnalyzerContext = {
+  protected def analyze[S <: State[_], M <: Metric[_]](
+                                                        analyzersConfig: HoolokDataQualityAnalyzerConfig,
+                                                        dataframe: DataFrame): AnalyzerContext = {
     val analyzers = analyzersConfig.productIterator
-      .filter(_.isInstanceOf[Option[Analyzer[_, Metric[_]]]])
-      .flatMap(_.asInstanceOf[Option[Analyzer[_, Metric[_]]]])
+      .flatMap {
+        case c: Option[Analyzer[S, M]] => c
+        case _ => None
+      }
       .toSeq
 
     AnalysisRunner
@@ -86,7 +90,7 @@ class DeequValidation(config: HoolokDataQualityConfig)
   }
 
   // scalastyle:off
-  protected def check(verification: List[HoolokStepDataQualityCheckConfig], dataframe: DataFrame): VerificationResult = {
+  protected def check(verification: List[HoolokDataQualityCheckConfig], dataframe: DataFrame): VerificationResult = {
     def mapOp[A](op: String, value: A)(implicit ev: A => Ordered[A]): A => Boolean = op match {
       case "==" => _ == value
       case ">" => _ > value
@@ -98,19 +102,19 @@ class DeequValidation(config: HoolokDataQualityConfig)
     }
 
     def addConstraint(check: Check, cfg: Config): Check = cfg match {
-      case c: HoolokStepDataQualityCheckIsCompleteConfig => check.isComplete(c.column)
-      case c: HoolokStepDataQualityCheckIsUniqueConfig => check.isUnique(c.column)
-      case c: HoolokStepDataQualityCheckHasSizeConfig => check.hasSize(mapOp(c.op, c.value))
-      case c: HoolokStepDataQualityCheckIsContainedInConfig => check.isContainedIn(c.column, c.allowedValues.toArray)
-      case c: HoolokStepDataQualityCheckIsNonNegativeConfig => check.isNonNegative(c.column)
-      case c: HoolokStepDataQualityCheckIsPositiveConfig => check.isPositive(c.column)
-      case c: HoolokStepDataQualityCheckIsLessThanConfig => check.isLessThan(c.columnA, c.columnB)
-      case c: HoolokStepDataQualityCheckIsLessThanOrEqualConfig => check.isLessThanOrEqualTo(c.columnA, c.columnB)
-      case c: HoolokStepDataQualityCheckIsGreaterThanConfig => check.isGreaterThan(c.columnA, c.columnB)
-      case c: HoolokStepDataQualityCheckIsGreaterThanOrEqualConfig => check.isGreaterThanOrEqualTo(c.columnA, c.columnB)
-      case c: HoolokStepDataQualityCheckHasPatternConfig => check.hasPattern(c.column, c.pattern.r)
-      case c: HoolokStepDataQualityCheckContainsUrlConfig => check.containsURL(c.column)
-      case c: HoolokStepDataQualityCheckContainsEmailConfig => check.containsEmail(c.column)
+      case c: HoolokDataQualityCheckIsCompleteConfig => check.isComplete(c.column)
+      case c: HoolokDataQualityCheckIsUniqueConfig => check.isUnique(c.column)
+      case c: HoolokDataQualityCheckHasSizeConfig => check.hasSize(mapOp(c.op, c.value))
+      case c: HoolokDataQualityCheckIsContainedInConfig => check.isContainedIn(c.column, c.allowedValues.toArray)
+      case c: HoolokDataQualityCheckIsNonNegativeConfig => check.isNonNegative(c.column)
+      case c: HoolokDataQualityCheckIsPositiveConfig => check.isPositive(c.column)
+      case c: HoolokDataQualityCheckIsLessThanConfig => check.isLessThan(c.columnA, c.columnB)
+      case c: HoolokDataQualityCheckIsLessThanOrEqualConfig => check.isLessThanOrEqualTo(c.columnA, c.columnB)
+      case c: HoolokDataQualityCheckIsGreaterThanConfig => check.isGreaterThan(c.columnA, c.columnB)
+      case c: HoolokDataQualityCheckIsGreaterThanOrEqualConfig => check.isGreaterThanOrEqualTo(c.columnA, c.columnB)
+      case c: HoolokDataQualityCheckHasPatternConfig => check.hasPattern(c.column, c.pattern.r)
+      case c: HoolokDataQualityCheckContainsUrlConfig => check.containsURL(c.column)
+      case c: HoolokDataQualityCheckContainsEmailConfig => check.containsEmail(c.column)
       case c: Config => throw new InvalidDataQualityConfigException(s"Config for '${c.getClass}' is not supported.")
     }
 
@@ -118,8 +122,10 @@ class DeequValidation(config: HoolokDataQualityConfig)
       .map { cfg =>
         val level = CheckLevel.withName(cfg.level.toLowerCase.capitalize)
         val opts = cfg.productIterator
-          .filter(_.isInstanceOf[Option[Config]])
-          .flatMap(_.asInstanceOf[Option[Config]])
+          .flatMap {
+            case c: Option[Config] => c
+            case _ => None
+          }
         opts.foldLeft(Check(level, cfg.description))((c, o) => addConstraint(c, o))
       }
     VerificationSuite()
