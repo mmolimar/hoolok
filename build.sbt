@@ -11,7 +11,6 @@ scmInfo := Some(ScmInfo(
 scalaVersion := "2.12.13"
 libraryDependencies ++= {
   val sparkVersion = "3.1.1"
-  val scalaTestVersion = "3.2.6"
   val circeVersion = "0.13.0"
   val circeYamlVersion = "0.13.1"
   val snakeYamlVersion = "1.28"
@@ -22,6 +21,9 @@ libraryDependencies ++= {
   val deequVersion = "1.1.0_spark-3.0-scala-2.12"
   val scalanlpVersion = "0.13.2"
   val deltaVersion = "0.8.0"
+
+  val scalaTestVersion = "3.2.6"
+  val mockServer = "5.11.2"
 
   Seq(
     "org.apache.spark" %% "spark-core" % sparkVersion % Compile,
@@ -48,7 +50,9 @@ libraryDependencies ++= {
     "org.scalanlp" %% "breeze" % scalanlpVersion,
 
     "org.scalatest" %% "scalatest-wordspec" % scalaTestVersion % Test,
-    "org.scalatest" %% "scalatest-shouldmatchers" % scalaTestVersion % Test
+    "org.scalatest" %% "scalatest-shouldmatchers" % scalaTestVersion % Test,
+    "org.scalatest" %% "scalatest-funsuite" % scalaTestVersion % Test,
+    "org.mock-server" % "mockserver" % mockServer % Test
   )
 }
 
@@ -84,6 +88,7 @@ val hoolokMainClass = "com.github.mmolimar.hoolok.JobRunner"
 mainClass in(Compile, run) := Some(hoolokMainClass)
 run in Compile := Defaults.runTask(fullClasspath in Compile, mainClass in(Compile, run), runner in(Compile, run)).evaluated
 fork in run := true
+Test / fork := true
 
 mainClass in assembly := Some(hoolokMainClass)
 assemblyMergeStrategy in assembly := {
