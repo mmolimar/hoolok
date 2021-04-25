@@ -5,7 +5,7 @@ import com.github.mmolimar.hoolok.common.Errors.{HoolokSuccess, UnknownHoolokErr
 import com.github.mmolimar.hoolok.common.Implicits.SparkSessionBuilderOptions
 import com.github.mmolimar.hoolok.common.{HoolokException, InvalidYamlFileException, MissingConfigFileException}
 import com.github.mmolimar.hoolok.inputs.{Input, InputFactory}
-import com.github.mmolimar.hoolok.outputs.{Output, OutputFactory}
+import com.github.mmolimar.hoolok.outputs.{Output, OutputFactory, StreamingPolicy, StreamingPolicyFactory}
 import com.github.mmolimar.hoolok.schemas.{Schema, SchemaFactory}
 import com.github.mmolimar.hoolok.steps.{Step, StepFactory}
 import io.circe.generic.auto._
@@ -24,7 +24,7 @@ private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
   private implicit lazy val spark: SparkSession = initialize(config.app)
 
   def execute(): Unit = {
-    val (schemas, inputs, steps, outputs) = validate(config)
+    val (schemas, inputs, steps, outputs, streamingPolicy) = validate(config)
 
     if (schemas.nonEmpty) logInfo("Registering schemas...")
     schemas.foreach(_.register())
@@ -38,21 +38,14 @@ private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
     logInfo("Writing outputs...")
     outputs.foreach(_.write())
 
-    waitForStreams()
-  }
-
-  @tailrec
-  private def waitForStreams(): Unit = {
-    if (spark.streams.active.nonEmpty) {
-      spark.streams.awaitAnyTermination()
-      spark.streams.resetTerminated()
-      waitForStreams()
-    }
+    streamingPolicy.waitForStreams()
   }
 
   def stop(): Unit = spark.stop()
 
-  private[hoolok] def validate(config: HoolokConfig): (List[Schema], List[Input], List[Step], List[Output]) = {
+  private[hoolok] def validate(
+                                config: HoolokConfig
+                              ): (List[Schema], List[Input], List[Step], List[Output], StreamingPolicy) = {
     if (config.inputs.isEmpty || config.outputs.isEmpty) {
       throw new InvalidYamlFileException("The YAML config file must have, at least one input and one output.")
     }
@@ -61,8 +54,9 @@ private[hoolok] class JobRunner(config: HoolokConfig) extends Logging {
     val inputs = config.inputs.map(InputFactory(_))
     val steps = config.steps.getOrElse(List.empty).map(StepFactory(_))
     val outputs = config.outputs.map(OutputFactory(_))
+    val streamingPolicy = StreamingPolicyFactory(config.app.streamingPolicy.getOrElse("default"))
 
-    (schemas, inputs, steps, outputs)
+    (schemas, inputs, steps, outputs, streamingPolicy)
   }
 
   private[hoolok] def initialize(appConfig: HoolokAppConfig): SparkSession = {

@@ -21,6 +21,7 @@ libraryDependencies ++= {
   val deequVersion = "1.1.0_spark-3.0-scala-2.12"
   val scalanlpVersion = "0.13.2"
   val deltaVersion = "0.8.0"
+  val javaFakerVersion = "1.0.2"
 
   val scalaTestVersion = "3.2.6"
   val embeddedKafkaVersion = "2.3.1"
@@ -59,6 +60,10 @@ libraryDependencies ++= {
     "org.zalando" %% "spark-json-schema" % sparkJsonSchemaVersion,
     "za.co.absa" %% "abris" % abrisVersion,
     "io.delta" %% "delta-core" % deltaVersion,
+    "com.github.javafaker" % "javafaker" % javaFakerVersion excludeAll (
+      ExclusionRule(organization = "org.yaml"),
+      ExclusionRule(organization = "org.reflections")
+    ),
     "com.amazon.deequ" % "deequ" % deequVersion excludeAll(
       ExclusionRule(organization = "org.apache.spark"),
       ExclusionRule(organization = "org.scalanlp")
@@ -106,9 +111,20 @@ fork in run := true
 
 mainClass in assembly := Some(hoolokMainClass)
 assemblyMergeStrategy in assembly := {
+  case "plugin.xml" => MergeStrategy.discard
+  case "git.properties" => MergeStrategy.discard
+  case "jetty-dir.css" => MergeStrategy.discard
   case "module-info.class" => MergeStrategy.discard
   case "log4j.properties" => MergeStrategy.discard
-  case PathList("META-INF", _*) => MergeStrategy.discard
+  case "NOTICE" => MergeStrategy.discard
+  case "MANIFEST.MF" => MergeStrategy.discard
+  case PathList(ps @ _*) if ps.last contains "LICENSE" => MergeStrategy.first
+  case PathList("META-INF", _*) => MergeStrategy.first
+  case PathList("org", "apache", _*) => MergeStrategy.first
+  case PathList("javax", _*) => MergeStrategy.first
+  case PathList("com", "sun", _*) => MergeStrategy.first
+  case PathList("org", "aopalliance", _*) => MergeStrategy.first
+  case PathList("edu", "umd", "cs", "findbugs", _*) => MergeStrategy.first
   case _ => MergeStrategy.deduplicate
 }
 

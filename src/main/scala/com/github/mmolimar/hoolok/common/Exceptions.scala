@@ -18,6 +18,11 @@ class InvalidYamlFileException(
                                 cause: Throwable = None.orNull
                               ) extends HoolokException(YamlFileError, Some(message), cause)
 
+class InvalidAppConfigException(
+                                 message: String,
+                                 cause: Throwable = None.orNull
+                               ) extends HoolokException(ConfigAppError, Some(message), cause)
+
 class InvalidSchemaConfigException(
                                     message: String,
                                     cause: Throwable = None.orNull
@@ -92,28 +97,33 @@ private[hoolok] object Errors {
     override val message: String = "Hoolok YAML file is not valid"
   }
 
-  case object ConfigSchemaError extends Errors {
+  case object ConfigAppError extends Errors {
     override val code: Int = -102
+    override val message: String = "The configuration for the app is incorrect"
+  }
+
+  case object ConfigSchemaError extends Errors {
+    override val code: Int = -103
     override val message: String = "The configuration for the schema is incorrect"
   }
 
   case object ConfigInputError extends Errors {
-    override val code: Int = -103
+    override val code: Int = -104
     override val message: String = "The configuration for the input is incorrect"
   }
 
   case object ConfigStepError extends Errors {
-    override val code: Int = -104
+    override val code: Int = -105
     override val message: String = "The configuration for the step is incorrect"
   }
 
   case object ConfigDataQualityError extends Errors {
-    override val code: Int = -105
+    override val code: Int = -106
     override val message: String = "The configuration for data quality is incorrect"
   }
 
   case object ConfigOutputError extends Errors {
-    override val code: Int = -106
+    override val code: Int = -107
     override val message: String = "The configuration for the output is incorrect"
   }
 

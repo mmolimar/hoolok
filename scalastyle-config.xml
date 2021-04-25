@@ -333,7 +333,7 @@
             ```
         -->
     </check>
-    <check level="error" enabled="true" class="org.scalastyle.scalariform.MagicNumberChecker">
+    <check level="error" enabled="false" class="org.scalastyle.scalariform.MagicNumberChecker">
         <!--
           Checks for use of magic numbers.
           ID: magic.number
@@ -508,7 +508,7 @@
           Justification: Too many classes/objects defined in a single file can make the code difficult to understand.
         -->
         <parameters>
-            <parameter name="maxTypes">30</parameter>
+            <parameter name="maxTypes">40</parameter>
         </parameters>
     </check>
     <check level="warn" enabled="true" class="org.scalastyle.scalariform.ObjectNamesChecker">
