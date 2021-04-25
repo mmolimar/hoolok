@@ -1,0 +1,33 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/root.json",
+  "type": "object",
+  "title": "Test Schema",
+  "properties": {
+    "col1": {
+      "$id": "#/properties/col1",
+      "type": "integer"
+    },
+    "col2": {
+      "$id": "#/properties/col2",
+      "type": "string"
+    },
+    "col3": {
+      "$id": "#/properties/col3",
+      "type": "string"
+    },
+    "col4": {
+      "$id": "#/properties/col4",
+      "type": "string"
+    },
+    "col5": {
+      "$id": "#/properties/col5",
+      "type": "string"
+    },
+    "col6": {
+      "$id": "#/properties/col6",
+      "type": "boolean"
+    }
+  }
+}
