@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "name": "kafka_schema",
+  "namespace": "hoolok",
+  "fields": [
+    {
+      "name": "key",
+      "type": "string"
+    },
+    {
+      "name": "value",
+      "type": "bytes"
+    }
+  ]
+}

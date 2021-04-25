@@ -155,6 +155,15 @@ class OutputsTest extends HoolokSparkTestHarness {
           new DataSourceBatchOutput(dataSourceBatchOutputConfig.copy(schema = None)).write()
         }
       }
+      "fail if the schema does not exist" in {
+        val output = new DataSourceBatchOutput(dataSourceBatchOutputConfig.copy(schema = Some("notexist")))
+        testDF.createOrReplaceTempView(dataSourceBatchOutputConfig.id)
+        spark.catalog.tableExists(dataSourceBatchOutputConfig.id) shouldBe true
+        assertThrows[InvalidOutputConfigException] {
+          output.write()
+        }
+        spark.catalog.dropTempView(dataSourceBatchOutputConfig.id)
+      }
       "fail if the schemas cannot be matched" in {
         val output = new DataSourceBatchOutput(dataSourceBatchOutputConfig.copy(
           options = Some(Map("path" -> Files.createTempDirectory("hoolok_data_source_batch_output_").toUri.toString)),

@@ -39,7 +39,11 @@ object hparser {
   }
 
   private val envVarPattern = "(.*)\\$\\{\\s*((\\w+)((:?([-?]))(\\S+)?)?)\\s*}(.*)".r
-  private val envVarConstructor = new EnvScalarConstructor()
+  private val envVarConstructor = new EnvScalarConstructor() {
+    override def getEnv(key: String): String = {
+      sys.env.get(key).orElse(sys.props.get(key)).getOrElse(None.orNull)
+    }
+  }
 
   private def resolveEnvVar(name: String, separator: String, value: String): String = {
     envVarConstructor.apply(name, separator, Option(value).getOrElse(""), envVarConstructor.getEnv(name));

@@ -1,0 +1,98 @@
+{
+  "type": "record",
+  "name": "input_schema",
+  "namespace": "hoolok",
+  "fields": [
+    {
+      "name": "course_id",
+      "type": [
+        "null",
+        "long"
+      ]
+    },
+    {
+      "name": "course_title",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+      "name": "url",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+      "name": "is_paid",
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    {
+      "name": "price",
+      "type": [
+        "null",
+        "double"
+      ]
+    },
+    {
+      "name": "num_subscribers",
+      "type": [
+        "null",
+        "int"
+      ]
+    },
+    {
+      "name": "num_reviews",
+      "type": [
+        "null",
+        "int"
+      ]
+    },
+    {
+      "name": "num_lectures",
+      "type": [
+        "null",
+        "int"
+      ]
+    },
+    {
+      "name": "level",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+      "name": "content_duration",
+      "type": [
+        "null",
+        "double"
+      ]
+    },
+    {
+      "name": "published_timestamp",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+      "name": "subject",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+      "name": "_corrupt_record",
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  ]
+}

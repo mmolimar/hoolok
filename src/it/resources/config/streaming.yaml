@@ -1,0 +1,144 @@
+app:
+  name: TestStreamingJob
+  enableHiveSupport: true
+  sparkConf:
+    spark.sql.adaptive.enabled: "true"
+    spark.master: local
+    spark.sql.warehouse.dir: ${OUTPUT_PATH}/stream/metastore_stream
+  sparkContext:
+    description: Integration test
+    hadoopConfiguration:
+      hive.default.fileformat: delta
+      hive.default.fileformat.managed: delta
+schemas:
+  - id: schema_input
+    kind: inline
+    format: spark-ddl
+    options:
+      value: |
+        course_id LONG, course_title STRING, url STRING, is_paid BOOLEAN,
+        price DOUBLE, num_subscribers INT, num_reviews INT, num_lectures INT,
+        level STRING, content_duration DOUBLE, published_timestamp DATE, subject STRING,
+        _corrupt_record STRING
+  - id: schema_output
+    kind: inline
+    format: spark-ddl
+    options:
+      value: |
+        course_id LONG, course_title STRING, url STRING, is_paid BOOLEAN,
+        price DOUBLE, num_subscribers INT, num_reviews INT, num_lectures INT,
+        level STRING, content_duration DOUBLE, published_timestamp DATE, subject STRING,
+        load_date DATE
+inputs:
+  - id: courses
+    format: csv
+    schema: schema_input
+    kind: stream
+    subtype: data-source
+    options:
+      path: ${INPUT_PATH}
+      inferSchema: "false"
+      header: "true"
+      mode: FAILFAST
+steps:
+  - id: courses_ext
+    kind: sql
+    options:
+      query: |
+        select course_id, course_title, url, is_paid, price, num_subscribers, num_reviews, num_lectures,
+        level, content_duration, published_timestamp, subject,
+        current_date() as load_date from courses
+outputs:
+  - id: courses_ext
+    format: avro
+    mode: append
+    kind: stream
+    subtype: data-source
+    schema: schema_output
+    coalesce: 1
+    options:
+      path: ${OUTPUT_PATH}/stream/courses_ext
+      checkpointLocation: ${OUTPUT_PATH}/stream/checkpoint/courses_ext
+      gracefulShutdownPath: ${GRACEFUL_SHUTDOWN_PATH}
+    dq:
+      analysis:
+        name: courses_ext_analysis
+        analyzers:
+          compliance:
+            instance: price
+            predicate: "price > 100"
+          completeness:
+            column: course_id
+          distinctness:
+            columns:
+              - course_id
+          uniqueness:
+            columns:
+              - course_id
+          uniqueValueRatio:
+            columns:
+              - course_id
+          countDistinct:
+            columns:
+              - course_id
+          entropy:
+            column: content_duration
+          mutualInformation:
+            columns:
+              - course_title
+              - level
+          maximum:
+            column: num_lectures
+          minimum:
+            column: num_lectures
+          maxLength:
+            column: course_title
+          minLength:
+            column: course_title
+          mean:
+            column: price
+          sum:
+            column: num_subscribers
+          size:
+          dataType:
+            column: level
+      verification:
+        name: courses_ext_dq
+        checks:
+          - level: error
+            description: Basic DQ validation 1
+            hasSize:
+              op: ">"
+              value: 1
+          - level: warning
+            description: Basic DQ validation 2
+            isComplete:
+              column: course_id
+            isUnique:
+              column: course_id
+            isContainedIn:
+              column: subject
+              allowedValues:
+                - Business Finance
+                - Web Development
+            isNonNegative:
+              column: price
+            isPositive:
+              column: content_duration
+            isLessThan:
+              columnA: num_reviews
+              columnB: num_subscribers
+            isLessThanOrEqualTo:
+              columnA: num_reviews
+              columnB: num_subscribers
+            isGreaterThan:
+              columnA: num_reviews
+              columnB: num_subscribers
+            isGreaterThanOrEqualTo:
+              columnA: num_reviews
+              columnB: num_subscribers
+            hasPattern:
+              column: course_title
+              pattern: "[A-Z]+.*"
+            containsURL:
+              column: url

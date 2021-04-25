@@ -1,7 +1,7 @@
 package com.github.mmolimar.hoolok.steps
 
 import com.github.mmolimar.hoolok._
-import com.github.mmolimar.hoolok.common.{DataQualityValidationException, InvalidStepConfigException}
+import com.github.mmolimar.hoolok.common.{DataQualityValidationException, InvalidDataQualityConfigException, InvalidStepConfigException}
 import com.github.mmolimar.hoolok.schemas._
 import org.apache.spark.sql.execution.streaming.MemoryStream
 import org.apache.spark.sql.types._
@@ -395,7 +395,6 @@ class StepsTest extends HoolokSparkTestHarness {
         }
         spark.catalog.dropTempView("test_sql")
       }
-
       "fail if the data quality validation does not pass" in {
         val dq = HoolokDataQualityConfig(
           analysis = None,
@@ -412,6 +411,25 @@ class StepsTest extends HoolokSparkTestHarness {
         )
         val step = new SqlStep(sqlConfig.copy(dq = Some(dq)))
         assertThrows[DataQualityValidationException] {
+          step.process()
+        }
+      }
+      "fail if the data quality validation has an invalid operator" in {
+        val dq = HoolokDataQualityConfig(
+          analysis = None,
+          verification = Some(HoolokDataQualityVerificationConfig(
+            name = "test_verification",
+            checks = List(
+              HoolokDataQualityCheckConfig(
+                level = "error",
+                description = "desc",
+                hasSize = Some(HoolokDataQualityCheckHasSizeConfig(op = "><", value = 2))
+              )
+            )
+          ))
+        )
+        val step = new SqlStep(sqlConfig.copy(dq = Some(dq)))
+        assertThrows[InvalidDataQualityConfigException] {
           step.process()
         }
       }

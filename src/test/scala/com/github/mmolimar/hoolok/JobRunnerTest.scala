@@ -29,6 +29,9 @@ class JobRunnerTest extends HoolokSparkTestHarness {
           JobRunner.parseConfigFile(Files.createTempFile("hoolok_config_", ".yml").toFile.getAbsolutePath)
         }
       }
+      "print the banner" in {
+        println(JobRunner.banner())
+      }
       "map the file to a Hoolok config object" in {
         val configFile = File.makeTemp("hoolok_config_")
         File(configFile).writeAll(yamlConfig())

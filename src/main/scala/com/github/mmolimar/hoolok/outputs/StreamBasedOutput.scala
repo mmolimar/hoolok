@@ -47,7 +47,7 @@ abstract class StreamBasedOutput(config: HoolokOutputConfig)
   protected def enableGracefulShutdown(query: StreamingQuery, path: String): Unit = {
     val fileName: String = {
       val dateFormat = DateTimeFormatter.ofPattern("YYYYMMdd_HHmmss").format(java.time.LocalDateTime.now)
-      s"hoolok_${spark.sparkContext.appName}_${config.id}_${dateFormat}_${UUID.randomUUID()}.stream"
+      s"hoolok_${spark.sparkContext.appName}_${config.id}_${dateFormat}_${UUID.randomUUID()}.stream".replace(" ", "_")
     }
     val initialDelay: Int = 10
     val fs = FileSystem.get(spark.sparkContext.hadoopConfiguration)
