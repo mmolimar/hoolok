@@ -1,5 +1,6 @@
 app:
   name: TestStreamingJob
+  streamingPolicy: failfast
   enableHiveSupport: true
   sparkConf:
     spark.sql.adaptive.enabled: "true"

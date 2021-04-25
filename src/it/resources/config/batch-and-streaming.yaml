@@ -41,6 +41,22 @@ inputs:
       inferSchema: "false"
       header: "true"
       mode: FAILFAST
+  - id: courses_mock
+    format: mock
+    schema: schema_input_bs
+    kind: stream
+    subtype: data-source
+    options:
+      fakers: |
+        course_id:Number.randomDigit;
+        course_title:Book.title;url:Internet.url;price:Commerce.price;num_subscribers:Number.digit;
+        num_reviews:Number.digit;num_lectures:Number.digit;
+        level:Number.digit;
+        subject:Name.title;
+        member1:BackToTheFuture.character
+        ;
+        ;
+      locale: "es"
   - id: courses_input_kafka_avro
     format: kafka
     kind: stream

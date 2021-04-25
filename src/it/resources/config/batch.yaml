@@ -40,6 +40,21 @@ inputs:
       inferSchema: "false"
       header: "true"
       mode: FAILFAST
+  - id: courses_mock
+    format: mock
+    schema: schema_input
+    kind: batch
+    subtype: data-source
+    options:
+      fakers: |
+        course_id:Number.randomDigit;
+        course_title:Book.title;url:Internet.url;price:Commerce.price;num_subscribers:Number.digit;
+        num_reviews:Number.digit;num_lectures:Number.digit;
+        level:Number.digit;
+        subject:Name.title;
+        member1:BackToTheFuture.character
+        ;
+        ;
 steps:
   - id: courses
     kind: cache
@@ -144,6 +159,11 @@ steps:
     options:
       numRows: "100"
       truncate: "false"
+  - id: courses_mock
+    kind: show
+    options:
+      numRows: "100"
+      truncate: "false"
   - id: courses_corrupt_records
     kind: sql
     options:
@@ -162,6 +182,15 @@ outputs:
       - load_date
     options:
       path: ${OUTPUT_PATH}/batch/courses_ext
+  - id: courses_mock
+    format: csv
+    mode: overwrite
+    kind: batch
+    subtype: data-source
+    coalesce: 1
+    options:
+      path: ${OUTPUT_PATH}/batch/courses_mock
+      header: "true"
   - id: courses_corrupt_records
     format: csv
     mode: overwrite

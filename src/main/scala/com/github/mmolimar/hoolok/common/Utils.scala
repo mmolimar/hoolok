@@ -2,7 +2,7 @@ package com.github.mmolimar.hoolok.common
 
 import com.github.mmolimar.hoolok.annotations._
 import com.github.mmolimar.hoolok.inputs.Input
-import com.github.mmolimar.hoolok.outputs.Output
+import com.github.mmolimar.hoolok.outputs.{Output, StreamingPolicy}
 import com.github.mmolimar.hoolok.schemas.Schema
 import com.github.mmolimar.hoolok.steps.Step
 import org.reflections.Reflections
@@ -37,6 +37,10 @@ object Utils {
 
   def inspectStreamOutputs: Map[String, Class[_ <: Output]] = {
     classesByName[OutputStreamKind, Output]
+  }
+
+  def inspectStreamingPolicies: Map[String, Class[_ <: StreamingPolicy]] = {
+    classesByName[StreamingPolicyKind, StreamingPolicy]
   }
 
   private def classesByName[A: TypeTag, C: TypeTag]: Map[String, Class[_ <: C]] = {

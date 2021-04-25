@@ -18,6 +18,7 @@ package object hoolok {
   case class HoolokAppConfig(
                               name: String,
                               enableHiveSupport: Option[Boolean] = None,
+                              streamingPolicy: Option[String] = Some("default"),
                               sparkConf: Option[Map[String, String]] = None,
                               sparkContext: Option[HoolokSparkContextConfig] = None
                             ) extends Config
