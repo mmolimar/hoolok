@@ -5,7 +5,8 @@ on:
   pull_request:
     branches: [ master ]
 jobs:
-  test:
+  build:
+    name: Hoolok build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -19,8 +20,12 @@ jobs:
       - name: Compile
         run: sbt clean compile
 
-      - name: Unit and Integration tests with coverage
-        run: sbt coverage test it:test coverageReport
-
       - name: Assembly
         run: sbt 'set assembly / test := {}' assembly
+
+      - name: Unit and Integration tests with coverage
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        run: |
+          sbt coverage test it:test coverageReport coverageAggregate
+          sbt coveralls
