@@ -28,13 +28,13 @@ libraryDependencies ++= {
   val mockServer = "5.11.2"
 
   Seq(
-    "org.apache.spark" %% "spark-core" % sparkVersion % Provided,
-    "org.apache.spark" %% "spark-sql" % sparkVersion % Provided,
-    "org.apache.spark" %% "spark-hive" % sparkVersion % Provided,
-    "org.apache.spark" %% "spark-avro" % sparkVersion % Provided,
-    "org.apache.spark" %% "spark-streaming" % sparkVersion % Provided,
-    "org.apache.spark" %% "spark-sql-kafka-0-10" % sparkVersion % Provided,
-    "org.apache.spark" %% "spark-hive" % sparkVersion % Provided,
+    "org.apache.spark" %% "spark-core" % sparkVersion % Compile excludeAll ExclusionRule(organization = "com.sun.jersey"),
+    "org.apache.spark" %% "spark-sql" % sparkVersion % Compile excludeAll ExclusionRule(organization = "com.sun.jersey"),
+    "org.apache.spark" %% "spark-hive" % sparkVersion % Compile excludeAll ExclusionRule(organization = "com.sun.jersey"),
+    "org.apache.spark" %% "spark-avro" % sparkVersion % Compile excludeAll ExclusionRule(organization = "com.sun.jersey"),
+    "org.apache.spark" %% "spark-streaming" % sparkVersion % Compile excludeAll ExclusionRule(organization = "com.sun.jersey"),
+    "org.apache.spark" %% "spark-sql-kafka-0-10" % sparkVersion % Compile excludeAll ExclusionRule(organization = "com.sun.jersey"),
+    "org.apache.spark" %% "spark-hive" % sparkVersion % Compile excludeAll ExclusionRule(organization = "com.sun.jersey"),
 
     "io.circe" %% "circe-generic" % circeVersion,
     "io.circe" %% "circe-parser" % circeVersion,

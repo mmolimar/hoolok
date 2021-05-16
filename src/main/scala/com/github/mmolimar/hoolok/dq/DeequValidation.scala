@@ -75,10 +75,11 @@ class DeequValidation(config: HoolokDataQualityConfig)
 
   protected def analyze[S <: State[_], M <: Metric[_]](
                                                         analyzersConfig: HoolokDataQualityAnalyzerConfig,
-                                                        dataframe: DataFrame): AnalyzerContext = {
+                                                        dataframe: DataFrame
+                                                      ): AnalyzerContext = {
     val analyzers = analyzersConfig.productIterator
       .flatMap {
-        case c: Option[Analyzer[S, M]] => c
+        case Some(a: Analyzer[_, _]) => Some(a.asInstanceOf[Analyzer[S, M]])
         case _ => None
       }
       .toSeq
@@ -89,8 +90,25 @@ class DeequValidation(config: HoolokDataQualityConfig)
       .run()
   }
 
-  // scalastyle:off
   protected def check(verification: List[HoolokDataQualityCheckConfig], dataframe: DataFrame): VerificationResult = {
+    val checks = verification
+      .map { cfg =>
+        val level = CheckLevel.withName(cfg.level.toLowerCase.capitalize)
+        val opts = cfg.productIterator
+          .flatMap {
+            case Some(cfg: Config) => Some(cfg)
+            case _ => None
+          }
+        opts.foldLeft(Check(level, cfg.description))((c, o) => addConstraint(c, o))
+      }
+    VerificationSuite()
+      .onData(dataframe)
+      .addChecks(checks)
+      .run()
+  }
+
+  // scalastyle:off
+  private def addConstraint(check: Check, cfg: Config): Check = {
     def mapOp[A](op: String, value: A)(implicit ev: A => Ordered[A]): A => Boolean = op match {
       case "==" => _ == value
       case ">" => _ > value
@@ -101,7 +119,7 @@ class DeequValidation(config: HoolokDataQualityConfig)
       case other: String => throw new InvalidDataQualityConfigException(s"Op '$other' is not supported.")
     }
 
-    def addConstraint(check: Check, cfg: Config): Check = cfg match {
+    cfg match {
       case c: HoolokDataQualityCheckIsCompleteConfig => check.isComplete(c.column)
       case c: HoolokDataQualityCheckIsUniqueConfig => check.isUnique(c.column)
       case c: HoolokDataQualityCheckHasSizeConfig => check.hasSize(mapOp(c.op, c.value))
@@ -117,21 +135,6 @@ class DeequValidation(config: HoolokDataQualityConfig)
       case c: HoolokDataQualityCheckContainsEmailConfig => check.containsEmail(c.column)
       case c: Config => throw new InvalidDataQualityConfigException(s"Config for '${c.getClass}' is not supported.")
     }
-
-    val checks = verification
-      .map { cfg =>
-        val level = CheckLevel.withName(cfg.level.toLowerCase.capitalize)
-        val opts = cfg.productIterator
-          .flatMap {
-            case c: Option[Config] => c
-            case _ => None
-          }
-        opts.foldLeft(Check(level, cfg.description))((c, o) => addConstraint(c, o))
-      }
-    VerificationSuite()
-      .onData(dataframe)
-      .addChecks(checks)
-      .run()
   }
 
 }
