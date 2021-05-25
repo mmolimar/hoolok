@@ -19,7 +19,7 @@ libraryDependencies ++= {
   val sparkJsonSchemaVersion = "0.6.3"
   val abrisVersion = "4.2.0"
   val deequVersion = "1.2.2-spark-3.0"
-  val deltaVersion = "0.8.0"
+  val deltaVersion = "1.0.0"
   val javaFakerVersion = "1.0.2"
 
   val scalaTestVersion = "3.2.9"
