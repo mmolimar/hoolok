@@ -10,11 +10,11 @@ scmInfo := Some(ScmInfo(
 
 scalaVersion := "2.12.12"
 libraryDependencies ++= {
-  val sparkVersion = "3.1.1"
-  val circeVersion = "0.13.0"
-  val circeYamlVersion = "0.13.1"
+  val sparkVersion = "3.1.2"
+  val circeVersion = "0.14.1"
+  val circeYamlVersion = "0.14.0"
   val snakeYamlVersion = "1.28"
-  val jinjavaVersion = "2.5.7"
+  val jinjavaVersion = "2.5.9"
   val reflectionsVersion = "0.9.12"
   val sparkJsonSchemaVersion = "0.6.3"
   val abrisVersion = "4.2.0"
@@ -23,9 +23,9 @@ libraryDependencies ++= {
   val javaFakerVersion = "1.0.2"
 
   val scalaTestVersion = "3.2.9"
+  val mockServer = "5.11.2"
   val embeddedKafkaVersion = "2.3.1"
   val schemaRegistryVersion = "5.3.4"
-  val mockServer = "5.11.2"
 
   Seq(
     "org.apache.spark" %% "spark-core" % sparkVersion % Compile excludeAll ExclusionRule(organization = "com.sun.jersey"),
@@ -51,17 +51,17 @@ libraryDependencies ++= {
     ),
     "com.amazon.deequ" % "deequ" % deequVersion excludeAll ExclusionRule(organization = "org.apache.spark"),
 
-    "org.mock-server" % "mockserver" % mockServer % "it,test",
     "org.scalatest" %% "scalatest-wordspec" % scalaTestVersion % "it,test",
     "org.scalatest" %% "scalatest-shouldmatchers" % scalaTestVersion % "it,test",
+    "org.mock-server" % "mockserver" % mockServer % "it,test",
     "io.github.embeddedkafka" %% "embedded-kafka" % embeddedKafkaVersion % "it,test",
     "io.confluent" % "kafka-schema-registry" % schemaRegistryVersion % "it,test"
   )
 }
 
 lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
-compileScalastyle := Compile / scalastyle
-Compile / compile := (Compile / compile dependsOn compileScalastyle).value
+compileScalastyle := (Compile / scalastyle).toTask("").value
+Compile / compile := ((Compile / compile) dependsOn compileScalastyle).value
 
 Compile / sourceGenerators += {
   Def.task {

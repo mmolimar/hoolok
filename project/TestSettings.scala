@@ -4,24 +4,24 @@ import sbt.{Def, Test, taskKey, _}
 
 object TestSettings {
   lazy val testScalastyle = taskKey[Unit]("testScalastyle")
-  testScalastyle := scalastyle.in(Test).toTask("").value
-  (test in Test) := ((test in Test) dependsOn testScalastyle).value
+  testScalastyle := (Test / scalastyle).toTask("").value
+  Test / test := ((Test / test) dependsOn testScalastyle).value
 
   lazy val IntegrationTest = config("it") extend Test
   lazy val testAll = TaskKey[Unit]("test-all")
 
   lazy val unitTest = Seq(
-    fork in Test := true,
-    parallelExecution in Test := false
+    Test / fork := true,
+    Test / parallelExecution := false
   )
   lazy val itTest: Seq[Def.Setting[_]] = inConfig(IntegrationTest)(Defaults.testSettings) ++
     Seq(
-      fork in IntegrationTest := true,
-      parallelExecution in IntegrationTest := false,
-      scalaSource in IntegrationTest := baseDirectory.value / "src" / "it" / "scala"
+      IntegrationTest / fork := true,
+      IntegrationTest / parallelExecution := false,
+      IntegrationTest / scalaSource := baseDirectory.value / "src" / "it" / "scala"
     )
 
   lazy val hoolokSettings: Seq[Def.Setting[_]] = unitTest ++ itTest ++
-    Seq(testAll := (test in IntegrationTest).dependsOn(test in Test).value)
+    Seq(testAll := (IntegrationTest / test).dependsOn(Test / test).value)
 
 }
