@@ -1,9 +1,11 @@
 name: Hoolok CI build
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
 jobs:
   build:
     name: Hoolok build
